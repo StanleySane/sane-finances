@@ -1,5 +1,9 @@
 # Sane Finances 
 
+[pypi_project]: https://pypi.org/project/sane-finances/
+[pypi_badge]: https://img.shields.io/pypi/v/sane-finances.svg
+[![pypi badge][pypi_badge]][pypi_project]
+
 A library for download and parse financial data from various sources.
 
 Library provides unified interface for access to various sources of financial data.
