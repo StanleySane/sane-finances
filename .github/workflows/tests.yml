@@ -36,4 +36,4 @@ jobs:
         run: python -m pip install pylint
       - name: Start linter
         run: |
-          pylint "--msg-template='{path}:{line:5d},{column:2d}: [{msg_id}] {msg} ({symbol})'" --output-format=colorized src\sane_finances
+          pylint "--msg-template='{path}:{line:5d},{column:2d}: [{msg_id}] {msg} ({symbol})'" --output-format=colorized src/sane_finances
