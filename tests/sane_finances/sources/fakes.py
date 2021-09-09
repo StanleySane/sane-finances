@@ -135,6 +135,65 @@ class FakeInstrumentInfoParser(InstrumentInfoParser):
         return self.fake_result
 
 
+class FakeDownloadParameterValuesStorage(DownloadParameterValuesStorage):
+
+    def __init__(
+            self,
+            fake_data: typing.Dict[typing.Type, typing.Tuple[typing.Tuple[typing.Any, str, typing.Any], ...]]):
+        """
+        :param fake_data: {<managed type>: ((<enum key>, <enum choice>, <enum value>), ...)}
+        """
+        self.fake_data = fake_data
+
+    def is_dynamic_enum_type(self, cls: type) -> bool:
+        return cls in self.fake_data
+
+    def get_all_managed_types(self) -> typing.Iterable[typing.Type]:
+        return tuple(self.fake_data.keys())
+
+    def get_dynamic_enum_key(self, instance: typing.Any) -> typing.Any:
+        for type_data in self.fake_data.values():
+            for enum_key, _, enum_value in type_data:
+                if enum_value == instance:
+                    return enum_key
+
+        return None
+
+    def get_dynamic_enum_value_by_key(self, cls: type, key) -> typing.Any:
+        if cls not in self.fake_data:
+            return None
+
+        for enum_key, _, enum_value in self.fake_data[cls]:
+            if enum_key == key:
+                return enum_value
+
+        return None
+
+    def get_dynamic_enum_value_by_choice(self, cls: type, choice: str) -> typing.Any:
+        if cls not in self.fake_data:
+            return None
+
+        for _, enum_choice, enum_value in self.fake_data[cls]:
+            if enum_choice == choice:
+                return enum_value
+
+        return None
+
+    def get_all_parameter_values_for(self, cls: type) -> typing.Optional[typing.Iterable]:
+        if cls not in self.fake_data:
+            return None
+
+        return tuple(enum_value for _, _, enum_value in self.fake_data[cls])
+
+    def get_parameter_type_choices(self, cls: type) -> typing.Optional[
+                typing.List[typing.Tuple[typing.Any, typing.Union[str, typing.List[typing.Tuple[typing.Any, str]]]]]
+            ]:
+        if cls not in self.fake_data:
+            return None
+
+        return [(enum_choice, enum_value) for _, enum_choice, enum_value in self.fake_data[cls]]
+
+
 class FakeInstrumentExporterFactory(InstrumentExporterFactory):
     history_values_exporter: InstrumentHistoryValuesExporter
     info_exporter: InstrumentsInfoExporter

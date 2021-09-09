@@ -169,7 +169,7 @@ class DynamicEnumTypeManager(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dynamic_enum_key(self, instance):
+    def get_dynamic_enum_key(self, instance: typing.Any) -> typing.Any:
         """ Get dynamic enum key of instance.
 
         Returned key must be immutable and simply serializable,
@@ -207,7 +207,7 @@ class DownloadParameterValuesStorage(DynamicEnumTypeManager, abc.ABC):
         """
         return None
 
-    def get_dynamic_enum_value_by_choice(self, cls: type, choice) -> typing.Any:
+    def get_dynamic_enum_value_by_choice(self, cls: type, choice: str) -> typing.Any:
         """ Get value of dynamic enum type by its choice.
 
         Choice is stringified value of dynamic enum key.
