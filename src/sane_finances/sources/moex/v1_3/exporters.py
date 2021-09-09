@@ -231,7 +231,7 @@ class MoexDownloadParameterValuesStorage(MoexDynamicEnumTypeManager, DownloadPar
 
         return None
 
-    def get_dynamic_enum_value_by_choice(self, cls: type, choice) -> typing.Any:
+    def get_dynamic_enum_value_by_choice(self, cls: type, choice: str) -> typing.Any:
         if not self.is_dynamic_enum_type(cls):
             return None
 
