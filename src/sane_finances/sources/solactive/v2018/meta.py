@@ -82,7 +82,7 @@ class IndexInfo(InstrumentInfoProvider):
         self.name = str(name)
 
     def __str__(self):
-        return (f"Splactive index ("
+        return (f"Solactive index ("
                 f"isin={self.isin}, "
                 f"name={self.name})")
 

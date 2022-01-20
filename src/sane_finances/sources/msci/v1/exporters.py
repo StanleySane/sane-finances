@@ -117,7 +117,7 @@ class MsciStringDataDownloader(InstrumentStringDataDownloader):
         assert moment_from <= moment_to
 
         if moment_from.date() == moment_to.date():
-            # if we need data only for one day, than we can't split it
+            # if we need data only for one day, then we can't split it
             yield parameters, moment_from, moment_to
             return
 
@@ -132,7 +132,7 @@ class MsciStringDataDownloader(InstrumentStringDataDownloader):
             yield parameters, moment_from, moment_to
             return
 
-        # otherwise we split interval in two parts:
+        # otherwise, we split interval in two parts:
         # - first part (data older than 5 years) will treat in monthly frequency
         # - second part (last 5 years) will treat in any desired frequency
 

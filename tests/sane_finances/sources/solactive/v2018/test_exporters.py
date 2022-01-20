@@ -92,7 +92,7 @@ class TestSolactiveAPIActualityChecker(unittest.TestCase):
         
         checker.check()
 
-        # check that there is no incorrect downloaded strings
+        # check that there is no incorrectly downloaded strings
         self.assertGreaterEqual(len(self.fake_string_data_downloader.download_instrument_history_string_results), 1)
         self.assertFalse(any(result.is_correct is False
                              for result
