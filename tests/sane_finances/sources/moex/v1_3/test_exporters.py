@@ -317,7 +317,7 @@ class TestMoexApiActualityChecker(unittest.TestCase):
         checker = self.get_checker()
         checker.check()
 
-        # check that there is no incorrect downloaded strings
+        # check that there is no incorrectly downloaded strings
         self.assertGreaterEqual(len(self.string_data_downloader.download_instruments_info_string_results), 1)
         self.assertFalse(any(result.is_correct is False
                              for result
@@ -342,7 +342,7 @@ class TestMoexApiActualityChecker(unittest.TestCase):
 
         checker.check()
 
-        # check that there is no incorrect downloaded strings
+        # check that there is no incorrectly downloaded strings
         self.assertGreaterEqual(len(self.string_data_downloader.download_instruments_info_string_results), 1)
         self.assertFalse(any(result.is_correct is False
                              for result

@@ -428,12 +428,12 @@ class TestMsciIndexPanelDataJsonParser(unittest.TestCase):
 
     def test_parse_raisesWhenWrongBlockContent(self):
         for block_name, spoil_content in (('market', True),
-                                           ('currency', True),
-                                           ('indexLevels', True),
-                                           ('frequency', True),
-                                           ('indexSuite', False),
-                                           ('size', True),
-                                           ('style', True)):
+                                          ('currency', True),
+                                          ('indexLevels', True),
+                                          ('frequency', True),
+                                          ('indexSuite', False),
+                                          ('size', True),
+                                          ('style', True)):
             # no block
             wrong_json = self.generate_valid_json().replace(f'"{block_name}"', f'"{block_name}__"')
 

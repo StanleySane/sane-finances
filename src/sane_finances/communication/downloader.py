@@ -96,7 +96,7 @@ class Downloader(abc.ABC):
 
         :param url: URL for download
         :param encoding: Encoding of downloaded string.
-            If ``None`` uses default encoding (depends of concrete downloader).
+            If ``None`` uses default encoding (depends on concrete downloader).
         :return: Container with downloaded string.
         """
         raise NotImplementedError

@@ -99,7 +99,7 @@ class TestUrlDownloader(unittest.TestCase):
         result = self.downloader.download_string(url)
 
         self.assertEqual(result.downloaded_string, self.fake_data)
-        self.assertEqual(self.http_response_read_count, 1)  # didn't changed
+        self.assertEqual(self.http_response_read_count, 1)  # didn't change
 
     def test_download_string_RaiseProperExceptionOnErrors(self):
         url = "http://localhost"

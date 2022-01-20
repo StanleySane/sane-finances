@@ -210,7 +210,7 @@ class TestMoexSecurityHistoryDownloadParameters(unittest.TestCase):
             sec_id='ID',
             start=0)
 
-    def test_safe_create_raiseWrongBiard(self):
+    def test_safe_create_raiseWrongBoard(self):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             _ = MoexSecurityHistoryDownloadParameters.safe_create(
