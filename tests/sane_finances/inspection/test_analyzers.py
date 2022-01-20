@@ -11,8 +11,8 @@ import typing
 from sane_finances.inspection.analyzers import (
     FULL_PATH_DELIMITER, get_attr_by_path, get_all_builtins, get_full_path, get_by_full_path,
     is_namedtuple, is_namedtuple_class,
-    InstanceBuilderArgFactory, InstanceBuilder, FlattenedInstanceAnalyzer, InstanceFlattener,
-    InstanceFactoryDataConverter)
+    InstanceBuilderArgFactory, InstanceBuilder, FlattenedAnnotatedInstanceAnalyzer,
+    InstanceFlattener, InstanceFactoryDataConverter)
 from sane_finances.annotations import Description, Volatile, LEGACY_ANNOTATIONS
 from sane_finances.sources.inspection import InstrumentInfoParameter
 
@@ -430,8 +430,8 @@ class TestInstanceBuilder(unittest.TestCase, CommonTestCaseMixin):
         # Here we assume that InstanceBuilder successfully builds target instances with unknown dynamic enum values
         # just passing such values to instance factory.
         # The factory decides whether verify such value (and raise exception) or not.
-        # Here we knows that our factories does not verify dynamic enum values and not raises in such cases.
-        # Otherwise we would rewrite this test case and use self.assertRaises instead of self.assertEqual.
+        # Here we know that our factories does not verify dynamic enum values and not raises in such cases.
+        # Otherwise, we would rewrite this test case and use self.assertRaises instead of self.assertEqual.
 
         self.native_instance.nested2.dynamic_enum = unknown_value
         self.named_tuple_instance.nested2.dynamic_enum = unknown_value
@@ -527,29 +527,33 @@ class TestInstanceBuilder(unittest.TestCase, CommonTestCaseMixin):
                 _ = builder.build_instance(wrong_build_data)
 
 
-class TestFlattenedInstanceAnalyzer(unittest.TestCase, CommonTestCaseMixin):
+class TestFlattenedAnnotatedInstanceAnalyzer(unittest.TestCase, CommonTestCaseMixin):
 
     def setUp(self) -> None:
         self.create_common_data()
 
     def test_get_flattened_attrs_info_Success(self):
         for root_data_class in (RootNative, RootNamedTuple, RootDataclass):
-            analyzer = FlattenedInstanceAnalyzer(root_data_class, dynamic_enum_type_manager=self.param_values_storage)
+            analyzer = FlattenedAnnotatedInstanceAnalyzer(
+                root_data_class,
+                dynamic_enum_type_manager=self.param_values_storage)
             flattened_attrs_info = analyzer.get_flattened_attrs_info()
             flattened_attrs_names = set(flattened_attrs_info.keys())
 
-            self.assertEquals(flattened_attrs_names, self.flattened_attrs_names)
+            self.assertEqual(flattened_attrs_names, self.flattened_attrs_names)
 
     def test_dynamic_enum_types_Success(self):
         for root_data_class in (RootNative, RootNamedTuple, RootDataclass):
             expected_dynamic_enum_types = tuple(self.param_values_storage.get_all_managed_types())
-            analyzer = FlattenedInstanceAnalyzer(root_data_class, dynamic_enum_type_manager=self.param_values_storage)
+            analyzer = FlattenedAnnotatedInstanceAnalyzer(
+                root_data_class,
+                dynamic_enum_type_manager=self.param_values_storage)
             dynamic_enum_types = tuple(analyzer.dynamic_enum_types)
 
             self.assertSequenceEqual(dynamic_enum_types, expected_dynamic_enum_types)
 
         # when no dynamic enum type manager result is empty
-        analyzer = FlattenedInstanceAnalyzer(str)
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(str)
         dynamic_enum_types = tuple(analyzer.dynamic_enum_types)
 
         self.assertSequenceEqual(dynamic_enum_types, ())
@@ -559,10 +563,10 @@ class TestFlattenedInstanceAnalyzer(unittest.TestCase, CommonTestCaseMixin):
             def __int__(self, val):
                 self.val = val
 
-        analyzer = FlattenedInstanceAnalyzer(NoHints)
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(NoHints)
         flattened_attrs_info = analyzer.get_flattened_attrs_info()
 
-        self.assertEquals(flattened_attrs_info, {})
+        self.assertEqual(flattened_attrs_info, {})
 
     def test_get_flattened_attrs_info_SuccessWithSpecialAnnotation(self):
         expected_description = "Description"
@@ -573,7 +577,7 @@ class TestFlattenedInstanceAnalyzer(unittest.TestCase, CommonTestCaseMixin):
                             Volatile(generator=lambda ctx: 42),
                             InstrumentInfoParameter()]
 
-        analyzer = FlattenedInstanceAnalyzer(SpecialAnnotations)
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(SpecialAnnotations)
         flattened_attrs_info = analyzer.get_flattened_attrs_info()
 
         self.assertTrue('attr' in flattened_attrs_info)
@@ -598,7 +602,7 @@ class TestFlattenedInstanceAnalyzer(unittest.TestCase, CommonTestCaseMixin):
             some_attr: int
             some: SomeClass
 
-        analyzer = FlattenedInstanceAnalyzer(RootClass)
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(RootClass)
         flattened_attrs_info = analyzer.get_flattened_attrs_info()
 
         self.assertEqual(len(flattened_attrs_info), 2)
@@ -617,11 +621,11 @@ class TestFlattenedInstanceAnalyzer(unittest.TestCase, CommonTestCaseMixin):
         with self.assertRaisesRegex(ValueError, 'Field name.*?duplicated'):
             # allow only one step of adding suffix: _2
             # suffix _3 not allowed
-            _ = FlattenedInstanceAnalyzer(RootClass, max_flattened_attr_name_suffix_index=2)
+            _ = FlattenedAnnotatedInstanceAnalyzer(RootClass, max_flattened_attr_name_suffix_index=2)
 
     def test_RaiseWhenWrongRoot(self):
         with self.assertRaisesRegex(TypeError, 'is not class'):
-            _ = FlattenedInstanceAnalyzer(None)
+            _ = FlattenedAnnotatedInstanceAnalyzer(None)
 
 
 class TestInstanceFlattener(unittest.TestCase, CommonTestCaseMixin):
@@ -633,8 +637,10 @@ class TestInstanceFlattener(unittest.TestCase, CommonTestCaseMixin):
         for root_data_class, instance in ((RootNative, self.native_instance),
                                           (RootNamedTuple, self.named_tuple_instance),
                                           (RootDataclass, self.dataclass_instance)):
-            # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-            analyzer = FlattenedInstanceAnalyzer(root_data_class, dynamic_enum_type_manager=self.param_values_storage)
+            # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+            analyzer = FlattenedAnnotatedInstanceAnalyzer(
+                root_data_class,
+                dynamic_enum_type_manager=self.param_values_storage)
             flattener = InstanceFlattener(
                 flattened_instance_analyzer=analyzer,
                 dynamic_enum_type_manager=self.param_values_storage)
@@ -655,8 +661,8 @@ class TestInstanceFlattener(unittest.TestCase, CommonTestCaseMixin):
         class SomeClass:
             attr: Annotated[int, Volatile(generator=lambda ctx: 0, stub_value=annotated_value)]
 
-        # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-        analyzer = FlattenedInstanceAnalyzer(SomeClass)
+        # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
         flattener = InstanceFlattener(flattened_instance_analyzer=analyzer)
         actual_value = -1
         instance = SomeClass(attr=actual_value)
@@ -676,8 +682,8 @@ class TestInstanceFlattener(unittest.TestCase, CommonTestCaseMixin):
         class SomeClass:
             attr: int = default_value
 
-        # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-        analyzer = FlattenedInstanceAnalyzer(SomeClass)
+        # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
         flattener = InstanceFlattener(flattened_instance_analyzer=analyzer)
         actual_value = -1
         instance = SomeClass(attr=actual_value)
@@ -693,8 +699,10 @@ class TestInstanceFlattener(unittest.TestCase, CommonTestCaseMixin):
         for root_data_class, wrong_instance in ((RootNative, 42),
                                                 (RootNamedTuple, 42),
                                                 (RootDataclass, 42)):
-            # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-            analyzer = FlattenedInstanceAnalyzer(root_data_class, dynamic_enum_type_manager=self.param_values_storage)
+            # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+            analyzer = FlattenedAnnotatedInstanceAnalyzer(
+                root_data_class,
+                dynamic_enum_type_manager=self.param_values_storage)
             flattener = InstanceFlattener(
                 flattened_instance_analyzer=analyzer,
                 dynamic_enum_type_manager=self.param_values_storage)
@@ -712,8 +720,10 @@ class TestInstanceFactoryDataConverter(unittest.TestCase, CommonTestCaseMixin):
         for root_data_class, expected_instance in ((RootNative, self.native_instance),
                                                    (RootNamedTuple, self.named_tuple_instance),
                                                    (RootDataclass, self.dataclass_instance)):
-            # assume that FlattenedInstanceAnalyzer and InstanceBuilder are absolutely correct and fully tested
-            analyzer = FlattenedInstanceAnalyzer(root_data_class, dynamic_enum_type_manager=self.param_values_storage)
+            # assume that FlattenedAnnotatedInstanceAnalyzer and InstanceBuilder are absolutely correct and fully tested
+            analyzer = FlattenedAnnotatedInstanceAnalyzer(
+                root_data_class,
+                dynamic_enum_type_manager=self.param_values_storage)
             builder = InstanceBuilder(root_data_class, parameter_values_storage=self.param_values_storage)
 
             converter = InstanceFactoryDataConverter(flattened_instance_analyzer=analyzer)
@@ -742,8 +752,8 @@ class TestInstanceFactoryDataConverter(unittest.TestCase, CommonTestCaseMixin):
 
         self.assertNotEqual(expected_factory_data_generated, expected_factory_data_not_generated)
 
-        # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-        analyzer = FlattenedInstanceAnalyzer(SomeClass)
+        # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
         converter = InstanceFactoryDataConverter(flattened_instance_analyzer=analyzer)
 
         factory_data = converter.get_instance_factory_data(flattened_data, generate_volatiles=True)
@@ -758,8 +768,8 @@ class TestInstanceFactoryDataConverter(unittest.TestCase, CommonTestCaseMixin):
 
         wrong_flattened_data = {'WRONG_ATTR': 42}
 
-        # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-        analyzer = FlattenedInstanceAnalyzer(SomeClass)
+        # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
         converter = InstanceFactoryDataConverter(flattened_instance_analyzer=analyzer)
 
         with self.assertRaisesRegex(ValueError, 'Not found'):
@@ -771,8 +781,8 @@ class TestInstanceFactoryDataConverter(unittest.TestCase, CommonTestCaseMixin):
 
         flattened_data = {'attr': 42}
 
-        # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-        analyzer = FlattenedInstanceAnalyzer(SomeClass)
+        # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
         # spoil info data
         analyzer._flattened_attrs_info['attr'] = analyzer._flattened_attrs_info['attr']._replace(path_from_root=())
 
@@ -788,8 +798,8 @@ class TestInstanceFactoryDataConverter(unittest.TestCase, CommonTestCaseMixin):
 
         flattened_data = {'attr1': 42, 'attr2': 42}
 
-        # assume that FlattenedInstanceAnalyzer is absolutely correct and fully tested
-        analyzer = FlattenedInstanceAnalyzer(SomeClass)
+        # assume that FlattenedAnnotatedInstanceAnalyzer is absolutely correct and fully tested
+        analyzer = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
         # spoil info data
         for attr_name in ('attr1', 'attr2'):
             analyzer._flattened_attrs_info[attr_name] = \

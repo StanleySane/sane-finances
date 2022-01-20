@@ -6,7 +6,7 @@
 Every source has its own structure of download parameters: attributes, their types, etc.
 This module helps to deal with such structure in unified way: analyze, parse, convert to/from dictionary, etc.
 """
-
+import abc
 import builtins
 import collections
 import datetime
@@ -113,7 +113,7 @@ def is_namedtuple(obj):
     """ Check that object is named tuple.
 
     :param obj: Object to check.
-    :return: ``True`` if `obj` is named tuple. Otherwise ``False``.
+    :return: ``True`` if `obj` is named tuple. Otherwise, ``False``.
     """
     return isinstance(obj, tuple) and hasattr(obj, '_asdict')
 
@@ -122,7 +122,7 @@ def is_namedtuple_class(cls):
     """Check that class is named tuple.
 
     :param cls: Class to check.
-    :return: ``True`` if `cls` is named tuple class. Otherwise ``False``.
+    :return: ``True`` if `cls` is named tuple class. Otherwise, ``False``.
     """
     return issubclass(cls, tuple) and hasattr(cls, '_asdict')
 
@@ -237,7 +237,7 @@ class InstanceBuilder:
     # order is important: last item wins.
     # thus base classes have to locate at the beginning,
     # more specialized classes (subclasses) have to locate at the ending.
-    # otherwise base class will always used.
+    # otherwise, base class will always be used.
     args_factories: typing.OrderedDict[typing.Any, typing.Optional[InstanceBuilderArgFactory]]
 
     default_args_factories: typing.OrderedDict[typing.Any, typing.Optional[InstanceBuilderArgFactory]] = \
@@ -356,6 +356,7 @@ class InstanceBuilder:
                 if origin is not None:
                     param_annotation = origin
 
+                attr_type: typing.Any  # to fix https://youtrack.jetbrains.com/issue/PY-42287
                 last_matched_factory = collections.deque(
                     (param_factory
                      for attr_type, param_factory
@@ -394,7 +395,7 @@ class InstanceBuilder:
 
 
 class InstanceAttributeInfo(typing.NamedTuple):
-    """ Container for some instance attribute info got from ``FlattenedInstanceAnalyzer``.
+    """ Container for some instance attributes info got from ``FlattenedInstanceAnalyzer``.
     """
     parent_info: typing.Optional['InstanceAttributeInfo']
     path_from_root: typing.Tuple[str, ...]
@@ -407,7 +408,42 @@ class InstanceAttributeInfo(typing.NamedTuple):
     is_immutable: bool  # marked as absolutely dependent on another instance. can't change its value by itself.
 
 
-class FlattenedInstanceAnalyzer:
+class FlattenedInstanceAnalyzer(abc.ABC):
+    """ Parse class (type) attributes annotations, including nested instances,
+    and manage them as flattened data.
+    """
+
+    @abc.abstractmethod
+    def get_flattened_attrs_info(self) -> typing.Dict[str, InstanceAttributeInfo]:
+        """ Get info about all attributes of target class.
+
+        :return: Dictionary in form {<flattened attribute name>: ``InstanceAttributeInfo``}.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def dynamic_enum_types(self) -> typing.Iterable[typing.Type]:
+        """ All managed dynamic enum types.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def root_data_class(self) -> typing.Type[T]:
+        """ Class to analyze.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def primitive_types(self) -> typing.Tuple[typing.Type, ...]:
+        """ List of supported primitive types.
+        """
+        raise NotImplementedError
+
+
+class FlattenedAnnotatedInstanceAnalyzer(FlattenedInstanceAnalyzer):
     """ Parse class (type) attributes annotations, including nested instances,
     and manage them as flattened data.
     """
@@ -416,9 +452,9 @@ class FlattenedInstanceAnalyzer:
     # order is important: last item wins.
     # thus base classes have to locate at the beginning,
     # more specialized classes (subclasses) have to locate at the ending.
-    # otherwise base class will always used.
-    primitive_types = (str, int, bool, float, list, set, dict,
-                       decimal.Decimal, datetime.date, datetime.datetime, enum.Enum)
+    # otherwise, base class will always be used.
+    _primitive_types = (str, int, bool, float, list, set, dict,
+                        decimal.Decimal, datetime.date, datetime.datetime, enum.Enum)
 
     def __init__(
             self,
@@ -434,12 +470,12 @@ class FlattenedInstanceAnalyzer:
         :param max_flattened_attr_name_suffix_index: Max value of index added (as suffix)
             to flattened attribute name if it duplicated.
         """
-        assert tuple not in self.primitive_types, "Named tuples treated as complex types"
+        assert tuple not in self._primitive_types, "Named tuples treated as complex types"
 
         if not inspect.isclass(root_data_class):
             raise TypeError(f"{root_data_class!r} is not class")
 
-        self.root_data_class = root_data_class
+        self._root_data_class = root_data_class
         self.dynamic_enum_type_manager = dynamic_enum_type_manager
         self.max_flattened_attr_name_suffix_index = (
             self.default_max_flattened_attr_name_suffix_index
@@ -451,20 +487,22 @@ class FlattenedInstanceAnalyzer:
         self._analyze_data_class(root_data_class, flattened_attr_name_prefix)
 
     def get_flattened_attrs_info(self) -> typing.Dict[str, InstanceAttributeInfo]:
-        """ Get info about all attributes of target class.
-
-        :return: Dictionary in form {<flattened attribute name>: ``InstanceAttributeInfo``}.
-        """
         return self._flattened_attrs_info
 
     @property
     def dynamic_enum_types(self) -> typing.Iterable[typing.Type]:
-        """ All managed dynamic enum types.
-        """
         if self.dynamic_enum_type_manager is None:
             return ()
 
         return self.dynamic_enum_type_manager.get_all_managed_types()
+
+    @property
+    def root_data_class(self) -> typing.Type[T]:
+        return self._root_data_class
+
+    @property
+    def primitive_types(self) -> typing.Tuple[typing.Type, ...]:
+        return self._primitive_types
 
     @staticmethod
     def _has_default_getter(_type: typing.Type[T], attr_name: str):
@@ -523,7 +561,7 @@ class FlattenedInstanceAnalyzer:
                 flattened_attr_name = f"{flattened_attr_name_prefix}_{attr_name}"
 
             if flattened_attr_name in self._flattened_attrs_info:
-                # find nearest vacant suffixed name
+                # find the nearest vacant suffixed name
                 for i in range(2, self.max_flattened_attr_name_suffix_index + 1):
                     new_form_field_name = f"{flattened_attr_name}_{i}"
                     if new_form_field_name not in self._flattened_attrs_info:
