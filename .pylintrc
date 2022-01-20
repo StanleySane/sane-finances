@@ -40,6 +40,9 @@ max-branches=26
 # Maximum number of statements in function / method body
 max-statements=100
 
+# Maximum number of return / yield for function / method body
+max-returns=10
+
 [SIMILARITIES]
 
 # Ignore comments when computing similarities.
