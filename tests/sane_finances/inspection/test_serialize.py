@@ -43,6 +43,7 @@ class TestFlattenedJSONEncoder(unittest.TestCase):
                 (None, 'null'),
                 (42, '42'),
                 ('42', '"42"'),
+                ([42], '[42]'),
                 (SomeEnum.ONE, f'"{SomeEnum.ONE.value}"'),
                 (datetime.date(1900, 12, 31), '"1900-12-31"'),
                 (decimal.Decimal(42), '42.0'),

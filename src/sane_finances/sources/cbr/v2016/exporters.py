@@ -238,7 +238,7 @@ class CbrCurrencyDownloadParameterValuesStorage(DownloadParameterValuesStorage):
     def _get_rate_frequency_choices():
         rate_frequency: RateFrequencies
 
-        return [(rate_frequency.value, rate_frequency.description)
+        return [(rate_frequency.value, rate_frequency.description)  # pylint: disable=undefined-variable
                 for rate_frequency
                 in RateFrequencies]
 

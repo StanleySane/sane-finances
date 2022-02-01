@@ -46,7 +46,7 @@ class FlattenedJSONEncoder(json.JSONEncoder):
         :param separators: See ``json.JSONEncoder.__init__`` documentation
         :param default: See ``json.JSONEncoder.__init__`` documentation
         :param special_encoders: Dictionary of encoders for special types
-        in form of {<special type>, <encoder for such type>}.
+         in form of {special_type, encoder_for_such_type}.
         """
 
         super().__init__(
@@ -117,7 +117,7 @@ class FlattenedJSONDecoder(json.JSONDecoder):
         :param strict: See ``json.JSONDecoder.__init__`` documentation
         :param object_pairs_hook: See ``json.JSONDecoder.__init__`` documentation
         :param decoders: Dictionary of decoders for special types
-        in form of {<field name>, <decoder for such field>}.
+         in form of {field_name, decoder_for_such_field}.
         """
 
         self.decoders = decoders or {}
@@ -183,7 +183,7 @@ class FlattenedDataSerializer(abc.ABC):
     def serialize_flattened_data(self, flattened_data: typing.Dict[str, typing.Any]) -> str:
         """ Get string representation of flattened data.
 
-        :param flattened_data: One-level dictionary of data in form of {<field name>: <field value>}
+        :param flattened_data: One-level dictionary of data in form of {field_name: field_value}
         :return: String representation of data.
         """
         raise NotImplementedError
@@ -211,10 +211,10 @@ class FlattenedDataSerializer(abc.ABC):
 
         :param s: String to deserialize.
         :param decode_dynamic_enums: ``True`` (default) if string representations of dynamic enums in ``s``
-        must be converted to their enum types.
-        Otherwise, deserialized values will be leaved in original representations (usually enum key value).
-        See example above.
-        :return: One-level dictionary of data in form of {<field name>: <field value>}
+         must be converted to their enum types.
+         Otherwise, deserialized values will be leaved in original representations (usually enum key value).
+         See example above.
+        :return: One-level dictionary of data in form of {field_name: field_value}
         """
         raise NotImplementedError
 

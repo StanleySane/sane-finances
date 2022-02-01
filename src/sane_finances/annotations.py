@@ -122,6 +122,7 @@ elif PEP_560:  # pragma: no cover
 
     # noinspection PyUnresolvedReferences,PyProtectedMember
     class _AnnotatedAlias(typing._GenericAlias, _root=True):
+        # pylint: disable=consider-using-f-string
         """Runtime representation of an annotated type.
         At its core 'Annotated[t, dec1, dec2, ...]' is an alias for the type 't'
         with extra annotations. The alias behaves like a normal typing alias,
@@ -162,6 +163,7 @@ elif PEP_560:  # pragma: no cover
             return hash((self.__origin__, self.__metadata__))
 
     class Annotated:
+        # pylint: disable=consider-using-f-string
         """Add context specific metadata to a type.
         Example: Annotated[int, runtime_check.Unsigned] indicates to the
         hypothetical runtime_check module that this type is an unsigned int.
