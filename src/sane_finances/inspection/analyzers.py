@@ -77,7 +77,7 @@ get_all_builtins.all_builtins = None
 
 
 def get_full_path(obj: typing.Any) -> str:
-    """ Get full path os some object in form '<module name>,<qualified name>'
+    """ Get full path os some object in form 'module_name,qualified_name'
     appropriate for ``get_by_full_path`` function.
 
     Such full path can be used as fully qualified or absolute path for object import,
@@ -98,8 +98,8 @@ def get_full_path(obj: typing.Any) -> str:
 def get_by_full_path(full_path: str) -> typing.Any:
     """ Get value by fully qualified name.
 
-    :param full_path: Full path (fully qualified name) in form '<module name>,<qualified name>'
-    :return: Value of fully qualified object or ``None`` if module '<module name>' not found.
+    :param full_path: Full path (fully qualified name) in form 'module_name,qualified_name'
+    :return: Value of fully qualified object or ``None`` if module 'module_name' not found.
     """
     module_name, obj_qual_name = full_path.split(FULL_PATH_DELIMITER)
     try:
@@ -417,7 +417,7 @@ class FlattenedInstanceAnalyzer(abc.ABC):
     def get_flattened_attrs_info(self) -> typing.Dict[str, InstanceAttributeInfo]:
         """ Get info about all attributes of target class.
 
-        :return: Dictionary in form {<flattened attribute name>: ``InstanceAttributeInfo``}.
+        :return: Dictionary in form {flattened_attribute_name: ``InstanceAttributeInfo``}.
         """
         raise NotImplementedError
 
@@ -643,7 +643,7 @@ class InstanceFlattener:
 
         :param instance: Instance to flatten.
         :param stub_volatile: Whether substitute attribute values with their stubs.
-        :return: Flattened dictionary in form {<flattened attribute name>: <attribute value>}.
+        :return: Flattened dictionary in form {flattened_attribute_name: attribute_value}.
         """
         if instance is None:
             return {}
@@ -710,7 +710,7 @@ class InstanceFactoryDataConverter:
         """ Takes flattened data (as dictionary) and converts it to "full-deep" data
         enabled for instance creation via its factory.
 
-        :param flattened_data: Flattened dictionary in form {<flattened attribute name>: <attribute value>}.
+        :param flattened_data: Flattened dictionary in form {flattened_attribute_name: attribute_value}.
         :param generate_volatiles: Whether generate volatile attributes with their current values.
         :return: Full-deep dictionary representation of instance.
         """

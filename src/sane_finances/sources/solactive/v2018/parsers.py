@@ -56,7 +56,7 @@ class SolactiveJsonParser(InstrumentValuesHistoryParser):
             moment = first_date + datetime.timedelta(milliseconds=json_item[FieldNames.TIMESTAMP.value])
 
             # convert from float to Decimal
-            str_value = "%.4f" % json_item[FieldNames.VALUE.value]
+            str_value = f"{json_item[FieldNames.VALUE.value]:.4f}"
             value = decimal.Decimal(str_value)
 
             self.logger.debug(f"Converted value from {json_item[FieldNames.VALUE.value]} to {value}")

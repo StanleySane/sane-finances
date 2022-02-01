@@ -32,7 +32,7 @@ min-public-methods=1
 max-attributes=11
 
 # Maximum number of locals for function / method body
-max-locals=25
+max-locals=26
 
 # Maximum number of branch for function / method body
 max-branches=26

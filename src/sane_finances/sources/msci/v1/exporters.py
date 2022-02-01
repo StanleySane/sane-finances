@@ -412,11 +412,14 @@ class MsciIndexDownloadParameterValuesStorage(DownloadParameterValuesStorage):
         suite: IndexSuites
         group: IndexSuiteGroups
 
-        suites_without_groups = [(suite.value, suite.description) for suite in IndexSuites if suite.group is None]
+        suites_without_groups = [(suite.value, suite.description)  # pylint: disable=undefined-variable
+                                 for suite
+                                 in IndexSuites
+                                 if suite.group is None]
         grouped_suites = [(group.value, [(suite.value, suite.description)
                                          for suite
                                          in IndexSuites
-                                         if suite.group == group])
+                                         if suite.group == group])  # pylint: disable=undefined-variable
                           for group in IndexSuiteGroups]
 
         return suites_without_groups + grouped_suites
