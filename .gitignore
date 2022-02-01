@@ -128,9 +128,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# scripts
-scripts/
-
-# PyCharm
-.idea/
