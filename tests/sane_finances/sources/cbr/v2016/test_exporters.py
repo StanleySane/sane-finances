@@ -248,7 +248,7 @@ class TestCbrCurrencyDownloadParameterValuesStorage(unittest.TestCase):
         self.assertIsNone(choices)
 
 
-class TestCbrCurrencyRatesExporterFactory(CommonTestCases.CommonIndexExporterFactoryTests):
+class TestCbrCurrencyRatesExporterFactory(CommonTestCases.CommonInstrumentExporterFactoryTests):
 
     def get_exporter_factory(self) -> InstrumentExporterFactory:
         return CbrCurrencyRatesExporterFactory()

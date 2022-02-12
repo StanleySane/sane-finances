@@ -474,7 +474,7 @@ class TestMsciAPIActualityChecker(unittest.TestCase):
             checker.check()
 
 
-class TestMsciIndexExporterFactory(CommonTestCases.CommonIndexExporterFactoryTests):
+class TestMsciIndexExporterFactory(CommonTestCases.CommonInstrumentExporterFactoryTests):
 
     def get_exporter_factory(self) -> InstrumentExporterFactory:
         return MsciIndexExporterFactory()

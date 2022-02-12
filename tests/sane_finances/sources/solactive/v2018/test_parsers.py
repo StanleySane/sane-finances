@@ -59,7 +59,10 @@ class TestSolactiveJsonParser(unittest.TestCase):
 
 
 class TestSolactiveIndexInfoParser(unittest.TestCase):
-    
+
+    def setUp(self) -> None:
+        self.parser = SolactiveIndexInfoParser()
+
     def test_parse_success(self):
         expected_result = [IndexInfo(name='11USA Index', isin='DE000SLA3E30'),
                            IndexInfo(name='ABCD', isin='DETEST104000')]
@@ -120,9 +123,7 @@ class TestSolactiveIndexInfoParser(unittest.TestCase):
 </html>
         """
         
-        parser = SolactiveIndexInfoParser()
-        
-        result = list(parser.parse(html))
+        result = list(self.parser.parse(html))
         
         self.assertSequenceEqual(result, expected_result)
     
@@ -148,10 +149,8 @@ class TestSolactiveIndexInfoParser(unittest.TestCase):
     </table>
         """
 
-        parser = SolactiveIndexInfoParser()
-
         with self.assertRaises(ParseError):
-            list(parser.parse(html))
+            list(self.parser.parse(html))
 
     def test_parse_raisesWithEmptyName(self):
         html = """
@@ -174,10 +173,8 @@ class TestSolactiveIndexInfoParser(unittest.TestCase):
     </table>
         """
 
-        parser = SolactiveIndexInfoParser()
-
         with self.assertRaises(ParseError):
-            list(parser.parse(html))
+            list(self.parser.parse(html))
 
     def test_parse_raisesWithoutIsin(self):
         html = """
@@ -201,15 +198,11 @@ class TestSolactiveIndexInfoParser(unittest.TestCase):
     </table>
         """
 
-        parser = SolactiveIndexInfoParser()
-        
         with self.assertRaises(ParseError):
-            list(parser.parse(html))
+            list(self.parser.parse(html))
     
     def test_parse_raisesEmptyString(self):
         html = ""
 
-        parser = SolactiveIndexInfoParser()
-        
         with self.assertRaises(ParseError):
-            list(parser.parse(html))
+            list(self.parser.parse(html))

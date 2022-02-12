@@ -48,7 +48,7 @@ class CommonTestCases:  # hide test cases from unittest discovery
 
             self.assertEqual(result, expected_result)
 
-    class CommonIndexExporterFactoryTests(unittest.TestCase):
+    class CommonInstrumentExporterFactoryTests(unittest.TestCase):
 
         def get_exporter_factory(self) -> InstrumentExporterFactory:
             raise NotImplementedError

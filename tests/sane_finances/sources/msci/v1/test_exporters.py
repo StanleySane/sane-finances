@@ -428,7 +428,7 @@ class TestMsciIndexDownloadParameterValuesStorage(unittest.TestCase):
         self.assertIsNone(choices)
 
 
-class TestMsciIndexExporterFactory(CommonTestCases.CommonIndexExporterFactoryTests):
+class TestMsciIndexExporterFactory(CommonTestCases.CommonInstrumentExporterFactoryTests):
 
     def get_exporter_factory(self) -> InstrumentExporterFactory:
         return MsciIndexExporterFactory()

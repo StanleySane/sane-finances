@@ -27,20 +27,6 @@ class TestSolactiveStringDataDownloader(unittest.TestCase):
         
         self.string_data_downloader = SolactiveStringDataDownloader(downloader)
 
-    def test_paginate_download_instrument_history_parameters(self):
-        isin = 'SOME_ISIN'
-        parameters = SolactiveIndexHistoryDownloadParameters.safe_create(isin=isin)
-        moment_from, moment_to = datetime.datetime(2010, 1, 1), datetime.datetime(2020, 1, 1)
-
-        paginated_parameters_tuples = \
-            self.string_data_downloader.paginate_download_instrument_history_parameters(
-                parameters,
-                moment_from,
-                moment_to)
-        paginated_parameters_tuples = list(paginated_parameters_tuples)  # materialize generator
-
-        self.assertTrue(len(paginated_parameters_tuples) >= 1)
-
     def test_download_instrument_history_string(self):
         isin = 'SOME_ISIN'
         parameters = SolactiveIndexHistoryDownloadParameters.safe_create(isin=isin)
@@ -166,7 +152,7 @@ class TestSolactiveDownloadParameterValuesStorage(unittest.TestCase):
         self.assertSequenceEqual(list(self.storage.get_all_managed_types()), [])
 
 
-class TestMsciIndexExporterFactory(CommonTestCases.CommonIndexExporterFactoryTests):
+class TestSolactiveIndexExporterFactory(CommonTestCases.CommonInstrumentExporterFactoryTests):
 
     def get_exporter_factory(self) -> InstrumentExporterFactory:
         return SolactiveExporterFactory()
