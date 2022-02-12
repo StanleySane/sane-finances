@@ -53,7 +53,9 @@ class TestIndexInfo(unittest.TestCase):
 class TestSolactiveIndexesInfoDownloadParameters(unittest.TestCase):
 
     def test_safe_create_Success(self):
-        _ = SolactiveIndexesInfoDownloadParameters.safe_create()
+        self.assertIsInstance(
+            SolactiveIndexesInfoDownloadParameters.safe_create(),
+            SolactiveIndexesInfoDownloadParameters)
 
 
 class TestSolactiveIndexHistoryDownloadParameters(unittest.TestCase):

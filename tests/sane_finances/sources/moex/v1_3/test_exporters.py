@@ -459,7 +459,7 @@ class TestMoexApiActualityChecker(unittest.TestCase):
 
 
 # noinspection PyPep8Naming
-class TestMoexIndexExporterFactory_v1_3(CommonTestCases.CommonIndexExporterFactoryTests):
+class TestMoexIndexExporterFactory_v1_3(CommonTestCases.CommonInstrumentExporterFactoryTests):
 
     def get_exporter_factory(self) -> InstrumentExporterFactory:
         return MoexIndexExporterFactory_v1_3()
