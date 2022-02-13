@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+import typing
 import unittest
 
 from sane_finances.sources.base import (
     InstrumentExporterFactory, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+from sane_finances.sources.generic import get_all_instrument_exporters
 from ..communication.fakes import FakeDownloader
 
 
@@ -104,3 +106,24 @@ class CommonTestCases:  # hide test cases from unittest discovery
                 new_result = factory.download_parameters_factory
 
                 self.assertIs(new_result, result)
+
+    class CommonSourceRegisterTests(unittest.TestCase):
+
+        def get_source_instrument_exporter_factory(self) -> typing.Type:
+            raise NotImplementedError
+
+        def test_source_register(self):
+            # at first read all available exporters
+            all_exporters = get_all_instrument_exporters()
+
+            # and only after that import testing source factory
+            source_instrument_exporter_factory = self.get_source_instrument_exporter_factory()
+
+            testing_factories = [
+                registry
+                for registry
+                in all_exporters
+                if isinstance(registry.factory, source_instrument_exporter_factory)
+            ]
+
+            self.assertEqual(len(testing_factories), 1)
