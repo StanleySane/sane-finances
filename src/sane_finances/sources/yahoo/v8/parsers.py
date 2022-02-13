@@ -111,7 +111,7 @@ class YahooQuotesJsonParser(InstrumentValuesHistoryParser):
         first_date = datetime.datetime(1970, 1, 1, tzinfo=tzinfo)
 
         for timestamp, close_value in zip(timestamps, closes):
-            moment = first_date + datetime.timedelta(milliseconds=timestamp)
+            moment = first_date + datetime.timedelta(seconds=timestamp)
 
             # convert from float to Decimal
             str_value = f"{close_value:.8f}"

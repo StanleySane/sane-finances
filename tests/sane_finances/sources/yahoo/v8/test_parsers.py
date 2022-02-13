@@ -20,18 +20,25 @@ class TestYahooQuotesJsonParser(unittest.TestCase):
 
     def test_parse_Success(self):
         expected_symbol = '^GSPC'
-        expected_timestamp = datetime.datetime(1970, 1, 1)
+        expected_timestamp1 = datetime.datetime(1970, 1, 1)
+        expected_timestamp2 = datetime.datetime(1988, 1, 4, hour=14, minute=30)
         expected_close_value = decimal.Decimal('42.42')
-        expected_result = [InstrumentQuoteValue(
-            symbol=expected_symbol,
-            timestamp=expected_timestamp,
-            close=expected_close_value)]
+        expected_result = [
+            InstrumentQuoteValue(
+                symbol=expected_symbol,
+                timestamp=expected_timestamp1,
+                close=expected_close_value),
+            InstrumentQuoteValue(
+                symbol=expected_symbol,
+                timestamp=expected_timestamp2,
+                close=expected_close_value)
+        ]
 
         valid_json = '''{"chart": {"result": [
         {
             "meta": {"symbol": "^GSPC"},
-            "timestamp": [0],
-            "indicators": {"quote": [{"close": [42.42]}]}
+            "timestamp": [0, 568305000],
+            "indicators": {"quote": [{"close": [42.42, 42.42]}]}
         }],
         "error": null
         }}'''
