@@ -23,6 +23,23 @@ class YahooQuotesJsonParser(InstrumentValuesHistoryParser):
     def __init__(self):
         self.logger = logging.getLogger(__name__ + '.' + self.__class__.__name__)
 
+    @staticmethod
+    def _extract_field(
+            src_dict: typing.Dict,
+            field_name: str,
+            type_to_check: typing.Optional[typing.Type] = None) -> typing.Any:
+
+        if field_name not in src_dict:
+            raise ParseError(f"Wrong JSON format. Has no '{field_name}' field.")
+
+        result = src_dict[field_name]
+
+        if type_to_check is not None:
+            if not isinstance(result, type_to_check):
+                raise ParseError(f"Wrong JSON format. Field {field_name!r} is not {type_to_check}.")
+
+        return result
+
     def parse(  # pylint: disable=arguments-renamed
             self,
             raw_json_text: str,
@@ -38,23 +55,15 @@ class YahooQuotesJsonParser(InstrumentValuesHistoryParser):
             # can be Inf etc., but we accept only dict
             raise ParseError("Wrong JSON format. Top level is not dict.")
 
-        if QuoteHistoryFieldNames.CHART.value not in raw_data:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.CHART.value}' field.")
-
-        raw_data = raw_data[QuoteHistoryFieldNames.CHART.value]
+        raw_data = self._extract_field(raw_data, QuoteHistoryFieldNames.CHART.value)
 
         error_data = raw_data.get(QuoteHistoryFieldNames.ERROR.value, None)
         if error_data is not None:
-            error_code = raw_data.get(QuoteHistoryFieldNames.ERROR_CODE.value, '')
-            error_description = raw_data.get(QuoteHistoryFieldNames.ERROR_DESCRIPTION.value, '')
+            error_code = error_data.get(QuoteHistoryFieldNames.ERROR_CODE.value, '')
+            error_description = error_data.get(QuoteHistoryFieldNames.ERROR_DESCRIPTION.value, '')
             raise ParseError(f"Source returned error: {error_code} {error_description}")
 
-        if QuoteHistoryFieldNames.RESULT.value not in raw_data:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.RESULT.value}' field.")
-
-        result_data = raw_data[QuoteHistoryFieldNames.RESULT.value]
-        if not isinstance(result_data, list):
-            raise ParseError(f"Wrong JSON format. Field {QuoteHistoryFieldNames.RESULT.value!r} is not list.")
+        result_data = self._extract_field(raw_data, QuoteHistoryFieldNames.RESULT.value, type_to_check=list)
         if len(result_data) == 0:
             raise ParseError(f"Wrong JSON format. Field {QuoteHistoryFieldNames.RESULT.value!r} is empty.")
 
@@ -62,46 +71,21 @@ class YahooQuotesJsonParser(InstrumentValuesHistoryParser):
         if not isinstance(result_data, dict):
             raise ParseError(f"Wrong JSON format. Items in {QuoteHistoryFieldNames.RESULT.value!r} are not dict.")
 
-        if QuoteHistoryFieldNames.META.value not in result_data:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.META.value}' field.")
-        meta_dict = result_data[QuoteHistoryFieldNames.META.value]
-        if not isinstance(meta_dict, dict):
-            raise ParseError(f"Wrong JSON format. Items in {QuoteHistoryFieldNames.META.value!r} are not dict.")
-        if QuoteHistoryFieldNames.SYMBOL.value not in meta_dict:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.SYMBOL.value}' field.")
-        symbol = meta_dict[QuoteHistoryFieldNames.SYMBOL.value]
+        meta_dict = self._extract_field(result_data, QuoteHistoryFieldNames.META.value, type_to_check=dict)
+        symbol = self._extract_field(meta_dict, QuoteHistoryFieldNames.SYMBOL.value)
 
-        if QuoteHistoryFieldNames.TIMESTAMP.value not in result_data:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.TIMESTAMP.value}' field.")
+        timestamps = self._extract_field(result_data, QuoteHistoryFieldNames.TIMESTAMP.value, type_to_check=list)
+        indicators = self._extract_field(result_data, QuoteHistoryFieldNames.INDICATORS.value, type_to_check=dict)
 
-        timestamps = result_data[QuoteHistoryFieldNames.TIMESTAMP.value]
-        if not isinstance(timestamps, list):
-            raise ParseError(f"Wrong JSON format. Field {QuoteHistoryFieldNames.TIMESTAMP.value!r} is not list.")
-
-        if QuoteHistoryFieldNames.INDICATORS.value not in result_data:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.INDICATORS.value}' field.")
-
-        indicators = result_data[QuoteHistoryFieldNames.INDICATORS.value]
-        if not isinstance(indicators, dict):
-            raise ParseError(f"Wrong JSON format. Field {QuoteHistoryFieldNames.INDICATORS.value!r} is not dict.")
-
-        if QuoteHistoryFieldNames.QUOTE.value not in indicators:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.QUOTE.value}' field.")
-        quote_data = indicators[QuoteHistoryFieldNames.QUOTE.value]
-        if not isinstance(quote_data, list):
-            raise ParseError(f"Wrong JSON format. Field {QuoteHistoryFieldNames.QUOTE.value!r} is not list.")
+        quote_data = self._extract_field(indicators, QuoteHistoryFieldNames.QUOTE.value, type_to_check=list)
         if len(quote_data) == 0:
             raise ParseError(f"Wrong JSON format. Field {QuoteHistoryFieldNames.QUOTE.value!r} is empty.")
 
         quote_data = quote_data[0]
         if not isinstance(quote_data, dict):
             raise ParseError(f"Wrong JSON format. Items in {QuoteHistoryFieldNames.QUOTE.value!r} are not dict.")
-        if QuoteHistoryFieldNames.CLOSE.value not in quote_data:
-            raise ParseError(f"Wrong JSON format. Has no '{QuoteHistoryFieldNames.CLOSE.value}' field.")
 
-        closes = quote_data[QuoteHistoryFieldNames.CLOSE.value]
-        if not isinstance(closes, list):
-            raise ParseError(f"Wrong JSON format. Field {QuoteHistoryFieldNames.CLOSE.value!r} is not list.")
+        closes = self._extract_field(quote_data, QuoteHistoryFieldNames.CLOSE.value, type_to_check=list)
 
         if len(timestamps) != len(closes):
             raise ParseError(
@@ -142,8 +126,8 @@ class YahooInstrumentInfoParser(InstrumentInfoParser):
 
             error_data = finance_data.get(SearchInfoFieldNames.ERROR.value, None)
             if error_data is not None:
-                error_code = finance_data.get(SearchInfoFieldNames.ERROR_CODE.value, '')
-                error_description = finance_data.get(SearchInfoFieldNames.ERROR_DESCRIPTION.value, '')
+                error_code = error_data.get(SearchInfoFieldNames.ERROR_CODE.value, '')
+                error_description = error_data.get(SearchInfoFieldNames.ERROR_DESCRIPTION.value, '')
                 raise ParseError(f"Source returned error: {error_code} {error_description}")
 
         if SearchInfoFieldNames.QUOTES.value not in raw_data:
