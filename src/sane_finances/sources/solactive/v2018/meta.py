@@ -36,7 +36,7 @@ class FileExtensions(enum.Enum):
 
 
 class FieldNames(enum.Enum):
-    """ Field name in JSON.
+    """ Field names in JSON.
     """
     INDEX_ID = 'indexId'
     TIMESTAMP = 'timestamp'

@@ -62,7 +62,7 @@ class TestYahooQuotesJsonParser(unittest.TestCase):
             "description": "ERROR DESCRIPTION"
         }}}'''
 
-        self.check_parse_raise(invalid_json, 'Source returned error')
+        self.check_parse_raise(invalid_json, 'Source returned error.*ERROR CODE.*ERROR DESCRIPTION')
 
     def test_parse_raisesWhenNoChartField(self):
         invalid_json = '''{"__chart": {"result": [
@@ -335,7 +335,7 @@ class TestYahooInstrumentInfoParser(unittest.TestCase):
             "description": "ERROR DESCRIPTION"
         }}}'''
 
-        self.check_parse_raise(invalid_json, 'Source returned error')
+        self.check_parse_raise(invalid_json, 'Source returned error.*ERROR CODE.*ERROR DESCRIPTION')
 
     def test_parse_raisesWhenSourceHasNoErrorField(self):
         # field "finance" usually contains "error" node

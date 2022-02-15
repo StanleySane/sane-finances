@@ -70,6 +70,18 @@ class InstrumentValuesHistoryEmpty(SourceError):
         super().__init__("Empty history data")
 
 
+class InstrumentInfoEmpty(SourceError):
+    """ Used by ``InstrumentInfoParser.parse`` to signal about empty info data
+        if such data is acceptable.
+
+        This is not signal about error but signal about acceptable empty sequence.
+    """
+    def __init__(self):
+        """ Initialize exception.
+        """
+        super().__init__("Empty info data")
+
+
 class InstrumentValue(typing.NamedTuple):
     """ Contains minimum (generic) data for value (e.g. price) representation
         of some financial instrument (stock, index etc.) on a moment in time.
