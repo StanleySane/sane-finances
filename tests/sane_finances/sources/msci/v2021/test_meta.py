@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import datetime
 import decimal
 import unittest
@@ -12,6 +11,7 @@ from sane_finances.sources.msci.v2021.meta import (
     Market, Currency, IndexLevel, IndexSuite, Size, Style, Scopes,
     IndexValue, IndexInfo, MsciIndexHistoryDownloadParameters, MsciIndexesInfoDownloadParameters,
     MsciDownloadParametersFactory, Frequency, IndexSuiteGroup, IndexPanelData)
+
 from .common import CommonTestCases
 from .fakes import FakeMsciIndexDownloadParameterValuesStorage
 
@@ -219,3 +219,10 @@ class TestMsciDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
         )
 
         return FakeMsciIndexDownloadParameterValuesStorage(fake_index_panel_data)
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.msci.v2021 import meta
+        return meta

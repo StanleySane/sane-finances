@@ -347,53 +347,55 @@ class InstanceBuilder:
         sig = inspect.signature(factory)
         for param in sig.parameters.values():
             is_named = param.kind not in (inspect.Parameter.VAR_KEYWORD, inspect.Parameter.VAR_POSITIONAL)
-            if is_named:
-                if param.name not in type_hints:
-                    raise ValueError(f"Parameter {param.name!r} of factory {factory!r} is not annotated")
-                param_annotation = type_hints[param.name]
+            if not is_named:
+                continue
 
-                origin = get_origin(param_annotation)
-                if origin is not None:
-                    if origin is typing.Union and param.default is None:
-                        # indirectly find out that param_annotation is typing.Optional
-                        param_annotation = param.annotation
-                    else:
-                        param_annotation = origin
+            if param.name not in type_hints:
+                raise ValueError(f"Parameter {param.name!r} of factory {factory!r} is not annotated")
+            param_annotation = type_hints[param.name]
 
-                attr_type: typing.Any  # to fix https://youtrack.jetbrains.com/issue/PY-42287
-                last_matched_factory = collections.deque(
-                    (param_factory
-                     for attr_type, param_factory
-                     in self.args_factories.items()
-                     if (issubclass(param_annotation, attr_type)
-                         if inspect.isclass(param_annotation) and inspect.isclass(attr_type)
-                         else param_annotation == attr_type)
-                     ),
-                    maxlen=1)
+            origin = get_origin(param_annotation)
+            if origin is not None:
+                if origin is typing.Union and param.default is None:
+                    # indirectly find out that param_annotation is typing.Optional
+                    param_annotation = param.annotation
+                else:
+                    param_annotation = origin
 
-                if last_matched_factory:
-                    param_factory = last_matched_factory.pop()
+            attr_type: typing.Any  # to fix https://youtrack.jetbrains.com/issue/PY-42287
+            last_matched_factory = collections.deque(
+                (param_factory
+                 for attr_type, param_factory
+                 in self.args_factories.items()
+                 if (issubclass(param_annotation, attr_type)
+                     if inspect.isclass(param_annotation) and inspect.isclass(attr_type)
+                     else param_annotation == attr_type)
+                 ),
+                maxlen=1)
 
-                    if param_factory.is_simple:
-                        param_factory = param_annotation, param_factory.simple_converter
+            if last_matched_factory:
+                param_factory = last_matched_factory.pop()
 
-                    else:
-                        assert param_factory.is_complex
-                        param_factory = self._build_factory(param_factory.complex_factory)
+                if param_factory.is_simple:
+                    param_factory = param_annotation, param_factory.simple_converter
 
                 else:
-                    if not callable(param_annotation):
-                        raise ValueError(f"Annotation of parameter {param.name!r} of factory {factory!r} "
-                                         f"is not callable: {param.annotation!r}")
+                    assert param_factory.is_complex
+                    param_factory = self._build_factory(param_factory.complex_factory)
 
-                    if param_annotation in all_builtins:
-                        param_factory = param_annotation, lambda t, v: t(v)
+            else:
+                if not callable(param_annotation):
+                    raise ValueError(f"Annotation of parameter {param.name!r} of factory {factory!r} "
+                                     f"is not callable: {param.annotation!r}")
 
-                    else:
-                        # something complex
-                        param_factory = self._build_factory(param_annotation)
+                if param_annotation in all_builtins:
+                    param_factory = param_annotation, lambda t, v: t(v)
 
-                factories_dict[param.name] = param_factory
+                else:
+                    # something complex
+                    param_factory = self._build_factory(param_annotation)
+
+            factories_dict[param.name] = param_factory
 
         return factories_dict
 

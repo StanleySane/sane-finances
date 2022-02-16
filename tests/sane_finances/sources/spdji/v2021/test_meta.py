@@ -186,3 +186,10 @@ class TestSpdjDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
                 value='ID2'))
 
         return FakeSpdjDownloadParameterValuesStorage(fake_index_meta_data, fake_index_finder_filters)
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.spdji.v2021 import meta
+        return meta

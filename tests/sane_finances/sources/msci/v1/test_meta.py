@@ -170,3 +170,10 @@ class TestMsciDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
 
     def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
         return MsciIndexDownloadParameterValuesStorage()
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.msci.v1 import meta
+        return meta
