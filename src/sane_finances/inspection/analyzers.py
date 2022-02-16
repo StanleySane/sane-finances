@@ -355,12 +355,21 @@ class InstanceBuilder:
             param_annotation = type_hints[param.name]
 
             origin = get_origin(param_annotation)
+            annotation_args = get_args(param_annotation)
             if origin is not None:
-                if origin is typing.Union and param.default is None:
-                    # indirectly find out that param_annotation is typing.Optional
-                    param_annotation = param.annotation
-                else:
-                    param_annotation = origin
+                param_annotation = origin
+
+            is_optional = False
+            if param_annotation is typing.Union:
+                # indirectly find out that param_annotation is typing.Optional
+                if type(None) in annotation_args:
+                    is_optional = True
+
+                if len(annotation_args) == 0:
+                    raise ValueError(f"Parameter {param.name!r} of factory {factory!r} "
+                                     f"is annotated by not allowed typing.Union or typing.Optional")
+
+                param_annotation = annotation_args[0]
 
             attr_type: typing.Any  # to fix https://youtrack.jetbrains.com/issue/PY-42287
             last_matched_factory = collections.deque(
@@ -389,7 +398,9 @@ class InstanceBuilder:
                                      f"is not callable: {param.annotation!r}")
 
                 if param_annotation in all_builtins:
-                    param_factory = param_annotation, lambda t, v: t(v)
+                    param_factory = (
+                        param_annotation,
+                        lambda t, v, _is_optional=is_optional: None if _is_optional and v is None else t(v))
 
                 else:
                     # something complex
@@ -578,13 +589,21 @@ class FlattenedAnnotatedInstanceAnalyzer(FlattenedInstanceAnalyzer):
                 raise ValueError(f"Field name {flattened_attr_name!r} duplicated.")
 
             origin = get_origin(annotation)
+            annotation_args = get_args(annotation)
             if origin is not None:
-                if origin is typing.Union:
+                annotation = origin
+            if annotation is typing.Union:
+                # indirectly find out that param_annotation is typing.Optional
+                if type(None) in annotation_args:
+                    has_default = True
+                    default_value = default_value if default_value is not None else None
+
+                if len(annotation_args) == 0:
                     raise ValueError(
                         f"Attribute {attr_name!r} in {_type} "
-                        f"has not available annotation typing.Union or typing.Optional")
+                        f"has not allowed annotation typing.Union or typing.Optional")
 
-                annotation = origin
+                annotation = annotation_args[0]
 
             is_primitive_type = bool(tuple(
                 primitive_type

@@ -4,6 +4,7 @@ import datetime
 import decimal
 import json
 import unittest
+import re
 
 from sane_finances.sources.base import ParseError, InstrumentInfoEmpty
 from sane_finances.sources.spdji.v2021.meta import IndexInfo, IndexLevel, IndexMetaData, Currency, ReturnType, \
@@ -535,4 +536,28 @@ class TestSpdjIndexFinderFiltersParser(unittest.TestCase):
         html = self.get_html_to_parse()
 
         with self.assertRaisesRegex(ParseError, f"group '{unknown_group_name}' not found"):
+            _ = list(self.parser.parse(html))
+
+    def test_parse_RaiseWhenNoNameAttribute(self):
+        html = self.get_html_to_parse()
+        # corrupt HTML
+        html = re.sub(r"\sname=", " __name=", html)
+
+        with self.assertRaisesRegex(ParseError, "Not found 'name' attribute in HTML"):
+            _ = list(self.parser.parse(html))
+
+    def test_parse_RaiseWhenNoDataGtmLabelAttribute(self):
+        html = self.get_html_to_parse()
+        # corrupt HTML
+        html = re.sub(r"\sdata-gtm-label=", " __data-gtm-label=", html)
+
+        with self.assertRaisesRegex(ParseError, "Not found 'data-gtm-label' attribute in HTML"):
+            _ = list(self.parser.parse(html))
+
+    def test_parse_RaiseWhenNoValueAttribute(self):
+        html = self.get_html_to_parse()
+        # corrupt HTML
+        html = re.sub(r"\svalue=", " __value=", html)
+
+        with self.assertRaisesRegex(ParseError, "Not found 'value' attribute in HTML"):
             _ = list(self.parser.parse(html))

@@ -7,11 +7,14 @@ import inspect
 import typing
 import unittest
 
+from sane_finances.communication.downloader import DownloadError
+
 from sane_finances.sources import generic
 from sane_finances.sources.cbr.v2016.exporters import CbrCurrencyRatesExporterFactory
 from sane_finances.sources.base import (
     MaxPagesLimitExceeded, InstrumentValuesHistoryEmpty,
-    InstrumentInfo, InstrumentValue, ParseError, InstrumentExporterFactory, InstrumentExporterRegistry)
+    InstrumentInfo, InstrumentValue, ParseError, InstrumentExporterFactory, InstrumentExporterRegistry,
+    SourceDownloadError)
 from .fakes import (
     FakeInstrumentHistoryDownloadParameters, FakeInstrumentInfoProvider, FakeInstrumentValueProvider,
     FakeInstrumentInfoParser, FakeInstrumentValuesHistoryParser, FakeInstrumentStringDataDownloader,
@@ -66,7 +69,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
 
         return expected_result
 
-    def test_success(self):
+    def test_Success(self):
         moment_from = moment_to = datetime.datetime(2000, 1, 1)
 
         expected_result = [FakeInstrumentValueProvider(InstrumentValue(
@@ -86,7 +89,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, 1)
 
-    def test_returnOnlyAskedInterval(self):
+    def test_ReturnOnlyAskedInterval(self):
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=5)
 
@@ -109,7 +112,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, 1)
 
-    def test_returnOnlyAdjustedInterval(self):
+    def test_ReturnOnlyAdjustedInterval(self):
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=5)
         adjusted_moment_from = moment_from - datetime.timedelta(days=2)
@@ -146,7 +149,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, 1)
 
-    def test_returnCallDownloadAndParseMultipleTimes(self):
+    def test_ReturnCallDownloadAndParseMultipleTimes(self):
         pages_count = 5
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=pages_count)
@@ -183,7 +186,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, pages_count)
 
-    def test_raiseWhenPagesLimitExceeded(self):
+    def test_RaiseWhenPagesLimitExceeded(self):
         pages_count = 5
         max_paged_parameters = pages_count - 1
         moment_from = datetime.datetime(2000, 1, 1)
@@ -218,7 +221,19 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
                             for result
                             in self.string_data_downloader.download_instrument_history_string_results))
 
-    def test_raiseWhenMomentFromGreaterThenMomentTo(self):
+    def test_RaiseWhenDownloadError(self):
+        moment_from = datetime.datetime(2000, 1, 1)
+        moment_to = moment_from + datetime.timedelta(days=5)
+
+        self.string_data_downloader.download_exception = DownloadError()
+
+        with self.assertRaises(SourceDownloadError):
+            _ = list(self.exporter.export_instrument_history_values(
+                FakeInstrumentHistoryDownloadParameters(),
+                moment_from,
+                moment_to))
+
+    def test_RaiseWhenMomentFromGreaterThenMomentTo(self):
         self.history_values_parser.fake_result = []
 
         moment_from = datetime.datetime(2000, 1, 1)
@@ -230,7 +245,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
                 moment_from,
                 moment_to))
 
-    def test_acceptInstrumentValuesHistoryEmptyException(self):
+    def test_AcceptInstrumentValuesHistoryEmptyException(self):
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=5)
 

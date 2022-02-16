@@ -54,6 +54,8 @@ class FakeInstrumentStringDataDownloader(InstrumentStringDataDownloader):
         self.download_instruments_info_string_counter = 0
         self.download_instrument_history_string_counter = 0
 
+        self.download_exception = None
+
     def adjust_download_instrument_history_parameters(
             self,
             parameters: InstrumentHistoryDownloadParameters,
@@ -73,6 +75,8 @@ class FakeInstrumentStringDataDownloader(InstrumentStringDataDownloader):
         yield parameters, moment_from, moment_to
 
     def download_instruments_info_string(self, parameters) -> DownloadStringResult:
+        if self.download_exception is not None:
+            raise self.download_exception
 
         self.download_instruments_info_string_counter += 1
         result = DownloadStringResult(self.fake_info_string)
@@ -84,6 +88,8 @@ class FakeInstrumentStringDataDownloader(InstrumentStringDataDownloader):
             parameters: InstrumentHistoryDownloadParameters,
             moment_from: datetime.datetime,
             moment_to: datetime.datetime) -> DownloadStringResult:
+        if self.download_exception is not None:
+            raise self.download_exception
 
         self.download_instrument_history_string_counter += 1
         result = DownloadStringResult(self.fake_history_string)

@@ -227,9 +227,9 @@ class SpdjIndexFinderFiltersParser:
         """
 
         group_pattern = re.compile(
-            r'<div[^>]*?data-fieldname\s*?=\s*?"(?P<field_name>[^"]*?)".*?>.*?'
-            r'<\w*?[^>]*?data-gtm-category\s*?=\s*?"Index Finder Filter".*?'
-            r'data-gtm-label\s*?=\s*?"(?P<label>[^"]*?)".*?>',
+            r'<div[^>]*?\sdata-fieldname\s*?=\s*?"(?P<field_name>[^"]*?)".*?>.*?'
+            r'<\w*?[^>]*?\sdata-gtm-category\s*?=\s*?"Index Finder Filter".*?'
+            r'\sdata-gtm-label\s*?=\s*?"(?P<label>[^"]*?)".*?>',
             re.IGNORECASE | re.MULTILINE | re.DOTALL
         )
         checkbox_pattern = re.compile(
@@ -237,15 +237,15 @@ class SpdjIndexFinderFiltersParser:
             re.IGNORECASE | re.MULTILINE | re.DOTALL
         )
         checkbox_name_pattern = re.compile(
-            r'name\s*?=\s*?"(?P<field_name>[^"]*?)"',
+            r'\sname\s*?=\s*?"(?P<field_name>[^"]*?)"',
             re.IGNORECASE | re.MULTILINE | re.DOTALL
         )
         checkbox_label_pattern = re.compile(
-            r'data-gtm-label\s*?=\s*?"(?P<label>[^"]*?)"',
+            r'\sdata-gtm-label\s*?=\s*?"(?P<label>[^"]*?)"',
             re.IGNORECASE | re.MULTILINE | re.DOTALL
         )
         checkbox_value_pattern = re.compile(
-            r'value\s*?=\s*?"(?P<value>[^"]*?)"',
+            r'\svalue\s*?=\s*?"(?P<value>[^"]*?)"',
             re.IGNORECASE | re.MULTILINE | re.DOTALL
         )
 
