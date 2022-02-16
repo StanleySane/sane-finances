@@ -6,6 +6,7 @@
 import collections
 import datetime
 import inspect
+import itertools
 import logging
 import typing
 
@@ -55,6 +56,15 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
             moment_from: datetime.datetime,
             moment_to: datetime.datetime) -> DownloadStringResult:
         return self.download_index_history_string(parameters.index_id, parameters.currency, parameters.return_type)
+
+    def paginate_download_instruments_info_parameters(
+            self,
+            parameters: SpdjIndexesInfoDownloadParameters) -> typing.Iterable[SpdjIndexesInfoDownloadParameters]:
+
+        for page_number in itertools.count(start=1, step=self.info_results_per_page):
+            # noinspection PyProtectedMember
+            parameters = parameters._replace(page_number=page_number)
+            yield parameters
 
     def download_instruments_info_string(
             self,

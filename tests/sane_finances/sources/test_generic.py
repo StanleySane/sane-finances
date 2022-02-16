@@ -14,7 +14,7 @@ from sane_finances.sources.cbr.v2016.exporters import CbrCurrencyRatesExporterFa
 from sane_finances.sources.base import (
     MaxPagesLimitExceeded, InstrumentValuesHistoryEmpty,
     InstrumentInfo, InstrumentValue, ParseError, InstrumentExporterFactory, InstrumentExporterRegistry,
-    SourceDownloadError)
+    SourceDownloadError, InstrumentInfoEmpty)
 from .fakes import (
     FakeInstrumentHistoryDownloadParameters, FakeInstrumentInfoProvider, FakeInstrumentValueProvider,
     FakeInstrumentInfoParser, FakeInstrumentValuesHistoryParser, FakeInstrumentStringDataDownloader,
@@ -295,7 +295,7 @@ class TestGenericInstrumentsInfoExporter(unittest.TestCase):
         self.exporter = generic.GenericInstrumentsInfoExporter(
             self.string_data_downloader, self.info_parser)
 
-    def test_success(self):
+    def test_Success(self):
         expected_result = [
             FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))
         ]
@@ -310,6 +310,80 @@ class TestGenericInstrumentsInfoExporter(unittest.TestCase):
                             for result
                             in self.string_data_downloader.download_instruments_info_string_results))
         self.assertEqual(self.info_parser.parse_counter, 1)
+
+    def test_ReturnCallDownloadAndParseMultipleTimes(self):
+        pages_count = 5
+
+        parse_result = [FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))]
+        expected_result = parse_result * pages_count
+
+        # imitate pagination:
+        def fake_paginate_download_instruments_info_parameters(parameters):
+            for _ in range(pages_count):
+                yield parameters
+
+        self.string_data_downloader.paginate_download_instruments_info_parameters = \
+            fake_paginate_download_instruments_info_parameters
+
+        self.info_parser.fake_result = parse_result
+
+        info_list = list(self.exporter.export_instruments_info(None))
+
+        self.assertSequenceEqual(info_list, expected_result)
+        self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, pages_count)
+        self.assertTrue(all(result.is_correct
+                            for result
+                            in self.string_data_downloader.download_instruments_info_string_results))
+        self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, 0)
+        self.assertEqual(self.info_parser.parse_counter, pages_count)
+
+    def test_RaiseWhenDownloadError(self):
+        self.string_data_downloader.download_exception = DownloadError()
+
+        with self.assertRaises(SourceDownloadError):
+            _ = list(self.exporter.export_instruments_info(None))
+
+    def test_RaiseWhenPagesLimitExceeded(self):
+        pages_count = 5
+        max_paged_parameters = pages_count - 1
+
+        parse_result = [FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))]
+
+        # imitate pagination:
+        def fake_paginate_download_instruments_info_parameters(parameters):
+            for _ in range(pages_count):
+                yield parameters
+
+        self.string_data_downloader.paginate_download_instruments_info_parameters = \
+            fake_paginate_download_instruments_info_parameters
+
+        self.info_parser.fake_result = parse_result
+        self.exporter.max_paged_parameters = max_paged_parameters
+
+        with self.assertRaises(MaxPagesLimitExceeded):
+            _ = list(self.exporter.export_instruments_info(None))
+
+        self.assertTrue(all(result.is_correct
+                            for result
+                            in self.string_data_downloader.download_instruments_info_string_results))
+
+    def test_AcceptInstrumentInfoEmptyException(self):
+        parse_result = [FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))]
+
+        self.info_parser.parse_exception = InstrumentInfoEmpty()
+        self.info_parser.fake_result = parse_result
+        expected_result = []
+
+        # verify arrange
+        self.assertNotEqual(parse_result, expected_result)
+
+        info_list = list(self.exporter.export_instruments_info(None))
+
+        self.assertSequenceEqual(info_list, expected_result)
+        self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, 0)
+        self.assertTrue(all(result.is_correct
+                            for result
+                            in self.string_data_downloader.download_instruments_info_string_results))
 
     def test_LastDownloadStringResultIsNotCorrectWhenError(self):
         self.info_parser.fake_result = []
