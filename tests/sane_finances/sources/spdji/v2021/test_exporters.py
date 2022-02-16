@@ -209,7 +209,7 @@ class TestSpdjStringDataDownloader(unittest.TestCase):
         for paginated_params in self.string_data_downloader.paginate_download_instruments_info_parameters(params):
             self.assertEqual(paginated_params.page_number, current_page_number)
 
-            current_page_number += self.string_data_downloader.info_results_per_page
+            current_page_number += 1
             current_step += 1
             if current_step > test_steps:
                 # limit pages for test purpose because pagination in this exporter is infinite by design

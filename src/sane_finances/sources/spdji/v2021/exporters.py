@@ -61,7 +61,7 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
             self,
             parameters: SpdjIndexesInfoDownloadParameters) -> typing.Iterable[SpdjIndexesInfoDownloadParameters]:
 
-        for page_number in itertools.count(start=1, step=self.info_results_per_page):
+        for page_number in itertools.count(start=1, step=1):
             # noinspection PyProtectedMember
             parameters = parameters._replace(page_number=page_number)
             yield parameters
