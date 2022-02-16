@@ -449,7 +449,8 @@ class TestSpdjIndexFinderFiltersParser(unittest.TestCase):
                                         class="dropdown-menu-chkbox-input" data-gtm-category="Index Finder Filter"
                                         data-gtm-action="Filter"
                                         data-gtm-label="{expected_result[0].label}"
-                                        value="{expected_result[0].value}"  value="{expected_result[0].value}">
+                                        value="{expected_result[0].value}"
+                                        value="{expected_result[0].value}">
                                     <label class="dropdown-chkbox-label" for="asset-family-equity" data-value="equity">
                                         <span class="criteria-name">Equity</span>
                                     </label>
@@ -459,8 +460,10 @@ class TestSpdjIndexFinderFiltersParser(unittest.TestCase):
                                         data-gtm-action="Expand" data-gtm-label="Fixed Income"
                                         class="sub-accordion accordian  "></span>   
                                     <input type="checkbox"
-                                        name="{expected_result[1].group.name}"  id="all-fixed-income"
-                                        data-gtm-category="Index Finder Filter" data-gtm-action="Filter"
+                                        name="{expected_result[1].group.name}" 
+                                        id="all-fixed-income"
+                                        data-gtm-category="Index Finder Filter"
+                                        data-gtm-action="Filter"
                                         data-gtm-label="{expected_result[1].label}"
                                         value="{expected_result[1].value}"
                                         class="has-sub dropdown-menu-chkbox-input" >
@@ -472,12 +475,12 @@ class TestSpdjIndexFinderFiltersParser(unittest.TestCase):
                                     <ul class="category-list dropdown-menu-chkbox">
                                         <li class="dropdown-menu-chkbox-item">
                                            <input type="checkbox"
-                                            name="{expected_result[2].group.name}"
                                             data-gtm-category="Index Finder Filter"
                                             data-gtm-action="Filter"
                                             data-gtm-label="{expected_result[2].label}"
                                             id="fixed-income--composite--global"
                                             value="{expected_result[2].value}"
+                                            name="{expected_result[2].group.name}"
                                             class="dropdown-menu-chkbox-input" >
                                            <label class="dropdown-chkbox-label" for="fixed-income--composite--global"
                                             data-value="fixed-income--composite--global">
@@ -488,10 +491,44 @@ class TestSpdjIndexFinderFiltersParser(unittest.TestCase):
                                            <input type="checkbox"
                                             name="{expected_result[3].group.name}"
                                             data-gtm-category="Index Finder Filter"
+                                            value="{expected_result[3].value}" 
                                             data-gtm-action="Filter"
                                             data-gtm-label="{expected_result[3].label}"
                                             id="fixed-income-treasury-sovereign-quasi"
+                                            class="dropdown-menu-chkbox-input" >
+                                           <label class="dropdown-chkbox-label"
+                                            for="fixed-income-treasury-sovereign-quasi"
+                                            data-value="fixed-income--treasury-sovereign-quasi-government">
+                                            <span class="criteria-name">Treasury / Sovereign / Quasi-Government</span>
+                                           </label>
+                                        </li>
+                                        
+                                        <!-- Duplicate value here -->
+                                        <li class="dropdown-menu-chkbox-item">
+                                           <input type="checkbox"
+                                            name="{expected_result[3].group.name}"
+                                            data-gtm-category="Index Finder Filter"
                                             value="{expected_result[3].value}" 
+                                            data-gtm-action="Filter"
+                                            data-gtm-label="{expected_result[3].label}"
+                                            id="fixed-income-treasury-sovereign-quasi"
+                                            class="dropdown-menu-chkbox-input" >
+                                           <label class="dropdown-chkbox-label"
+                                            for="fixed-income-treasury-sovereign-quasi"
+                                            data-value="fixed-income--treasury-sovereign-quasi-government">
+                                            <span class="criteria-name">Treasury / Sovereign / Quasi-Government</span>
+                                           </label>
+                                        </li>
+                                        
+                                        <!-- Empty value here -->
+                                        <li class="dropdown-menu-chkbox-item">
+                                           <input type="checkbox"
+                                            name="{expected_result[3].group.name}"
+                                            data-gtm-category="Index Finder Filter"
+                                            value="" 
+                                            data-gtm-action="Filter"
+                                            data-gtm-label="{expected_result[3].label}"
+                                            id="fixed-income-treasury-sovereign-quasi"
                                             class="dropdown-menu-chkbox-input" >
                                            <label class="dropdown-chkbox-label"
                                             for="fixed-income-treasury-sovereign-quasi"
