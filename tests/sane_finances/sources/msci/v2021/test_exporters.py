@@ -168,8 +168,22 @@ class TestMsciStringDataDownloader(unittest.TestCase):
 
     def test_adjust_download_instrument_history_parameters_Success(self):
         date_to = datetime.datetime.combine(
+            self.string_data_downloader.minimal_date_to + datetime.timedelta(days=1),
+            datetime.time.min)  # date after minimum
+        date_from = date_to - datetime.timedelta(days=1)
+
+        params, moment_from, moment_to = self.string_data_downloader.adjust_download_instrument_history_parameters(
+            parameters=self.history_download_params,
+            moment_from=date_from,
+            moment_to=date_to)
+
+        self.assertLessEqual(moment_from, moment_to)
+        self.assertIsNotNone(params)
+
+    def test_adjust_download_instrument_history_parameters_SuccessWithDateBeforeMinimum(self):
+        date_to = datetime.datetime.combine(
             self.string_data_downloader.minimal_date_to - datetime.timedelta(days=1),
-            datetime.time.min)  # date before minimum allowed date to
+            datetime.time.min)  # date before minimum is allowed date to
         date_from = date_to - datetime.timedelta(days=1)
 
         params, moment_from, moment_to = self.string_data_downloader.adjust_download_instrument_history_parameters(
@@ -182,15 +196,18 @@ class TestMsciStringDataDownloader(unittest.TestCase):
         self.assertIsNotNone(params)
 
     def test_download_instrument_history_string_Success(self):
-        moment_from = datetime.datetime(2010, 1, 1, 12)  # has hours
-        moment_to = moment_from + datetime.timedelta(days=1)
+        for moment_from in (
+                datetime.datetime(2010, 1, 1, 12),  # has hours
+                datetime.datetime(2010, 1, 1),  # has no hours
+        ):
+            moment_to = moment_from + datetime.timedelta(days=1)
 
-        result = self.string_data_downloader.download_instrument_history_string(
-            self.history_download_params,
-            moment_from,
-            moment_to)
+            result = self.string_data_downloader.download_instrument_history_string(
+                self.history_download_params,
+                moment_from,
+                moment_to)
 
-        self.assertEqual(result.downloaded_string, self.fake_data)
+            self.assertEqual(result.downloaded_string, self.fake_data)
 
     def test_download_index_history_string_Success(self):
         date_from = datetime.date(2010, 1, 1)

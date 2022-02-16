@@ -155,17 +155,29 @@ class RootNative:
     nested1: NestedNative
     nested2: NestedNative
     not_nested: str
+    union_val: typing.Union[int, str]
+    optional: typing.Optional[int]
 
-    def __init__(self, nested1: NestedNative, nested2: NestedNative, not_nested: str):
+    def __init__(
+            self,
+            nested1: NestedNative,
+            nested2: NestedNative,
+            not_nested: str,
+            union_val: typing.Union[int, str],
+            optional: int = None):
         self.nested1 = nested1
         self.nested2 = nested2
         self.not_nested = not_nested
+        self.union_val = union_val
+        self.optional = optional
 
     def __eq__(self, other):
         if isinstance(other, RootNative):
             return (self.nested1 == other.nested1
                     and self.nested2 == other.nested2
-                    and self.not_nested == other.not_nested)
+                    and self.not_nested == other.not_nested
+                    and self.union_val == other.union_val
+                    and self.optional == other.optional)
         return False
 
 
@@ -173,6 +185,8 @@ class RootNamedTuple(typing.NamedTuple):
     nested1: NestedNamedTuple
     nested2: NestedNative
     not_nested: str
+    union_val: typing.Union[int, str]
+    optional: typing.Optional[int]
 
 
 @dataclasses.dataclass
@@ -180,6 +194,8 @@ class RootDataclass:
     nested1: NestedNamedTuple
     nested2: NestedDataclass
     not_nested: str
+    union_val: typing.Union[int, str]
+    optional: typing.Optional[int]
 
 
 class CommonTestCaseMixin:
@@ -227,7 +243,9 @@ class CommonTestCaseMixin:
                         'sub_nested2': kwargs_e,
                         'dynamic_enum': 2,
                         'not_nested': 'f'},
-            'not_nested': 'g'
+            'not_nested': 'g',
+            'union_val': 42,
+            'optional': None
         }
 
         self.flattened_data = {}
@@ -255,7 +273,8 @@ class CommonTestCaseMixin:
                 sub_nested2=SubNestedNative(**kwargs_e),
                 dynamic_enum=DynamicEnumType(2, 'd2'),
                 not_nested='f'),
-            not_nested='g')
+            not_nested='g',
+            union_val=42)
 
         self.named_tuple_instance = RootNamedTuple(
             nested1=NestedNamedTuple(
@@ -268,7 +287,9 @@ class CommonTestCaseMixin:
                 sub_nested2=SubNestedNative(**kwargs_e),
                 dynamic_enum=DynamicEnumType(2, 'd2'),
                 not_nested='f'),
-            not_nested='g')
+            not_nested='g',
+            union_val=42,
+            optional=None)
 
         self.dataclass_instance = RootDataclass(
             nested1=NestedNamedTuple(
@@ -281,7 +302,9 @@ class CommonTestCaseMixin:
                 sub_nested2=SubNestedDataclass(**kwargs_e),
                 dynamic_enum=DynamicEnumType(2, 'd2'),
                 not_nested='f'),
-            not_nested='g')
+            not_nested='g',
+            union_val=42,
+            optional=None)
 
 
 class TestModuleFunctions(unittest.TestCase, CommonTestCaseMixin):
@@ -504,6 +527,16 @@ class TestInstanceBuilder(unittest.TestCase, CommonTestCaseMixin):
         with self.assertRaisesRegex(ValueError, 'is not callable'):
             _ = InstanceBuilder(BadClass)
 
+    def test_RaiseForEmptyUnionAnnotatedAttribute(self):
+        class BadClass:
+            value: typing.Union
+
+            def __init__(self, value: typing.Union):
+                self.value = value
+
+        with self.assertRaisesRegex(ValueError, 'annotated by not allowed'):
+            _ = InstanceBuilder(BadClass)
+
     def test_build_instance_RaiseForUnknownAttr(self):
         unknown_attr_name = 'unknown'
         wrong_build_data = self.build_data.copy()
@@ -622,6 +655,19 @@ class TestFlattenedAnnotatedInstanceAnalyzer(unittest.TestCase, CommonTestCaseMi
             # allow only one step of adding suffix: _2
             # suffix _3 not allowed
             _ = FlattenedAnnotatedInstanceAnalyzer(RootClass, max_flattened_attr_name_suffix_index=2)
+
+    def test_SuccessWhenAnnotatedAsOptional(self):
+        class SomeClass:
+            attr: typing.Optional[int]
+
+        _ = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
+
+    def test_RaiseWhenAnnotatedWIthEmptyUnion(self):
+        class SomeClass:
+            attr: typing.Union
+
+        with self.assertRaisesRegex(ValueError, 'not allowed annotation'):
+            _ = FlattenedAnnotatedInstanceAnalyzer(SomeClass)
 
     def test_RaiseWhenWrongRoot(self):
         with self.assertRaisesRegex(TypeError, 'is not class'):

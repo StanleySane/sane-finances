@@ -282,6 +282,7 @@ class MsciStringDataDownloader(InstrumentStringDataDownloader):
         date_from = moment_from.date()
         date_to = moment_to.date()
         if moment_to.time() != datetime.time.min:
+            # if we ask some minutes from date_to beginning, then we must read next day too
             date_to += datetime.timedelta(days=1)
 
         return self.download_index_history_string(
