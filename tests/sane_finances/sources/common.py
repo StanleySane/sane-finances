@@ -1,17 +1,25 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import dataclasses
+import datetime
+import decimal
+import enum
 import inspect
 import typing
 import unittest
 
 from sane_finances.inspection import analyzers
-
+from sane_finances.annotations import LEGACY_ANNOTATIONS
 from sane_finances.sources.base import (
     InstrumentExporterFactory, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
     DownloadParameterValuesStorage)
 from sane_finances.sources.generic import get_all_instrument_exporters
 from ..communication.fakes import FakeDownloader
+
+if LEGACY_ANNOTATIONS:
+    from sane_finances.annotations import get_type_hints, get_args, get_origin
+else:
+    from typing import get_type_hints, get_args, get_origin
 
 
 class CommonTestCases:  # hide test cases from unittest discovery
@@ -167,3 +175,85 @@ class CommonTestCases:  # hide test cases from unittest discovery
             ]
 
             self.assertEqual(len(testing_factories), 1)
+
+    class CommonStrAndReprTests(unittest.TestCase):
+
+        def get_testing_module(self):
+            raise NotImplementedError
+
+        def _get_type_value(self, _type: typing.Type):
+            if inspect.isclass(_type) and issubclass(_type, enum.Enum):
+                # for enum get first available value
+                return list(_type)[0]
+
+            kwargs = {}
+
+            all_builtins = analyzers.get_all_builtins()
+            special_values = {
+                datetime.date: datetime.date.today(),
+                datetime.datetime: datetime.datetime.utcnow(),
+                decimal.Decimal: decimal.Decimal(42),
+                type(None): None
+            }
+
+            type_hints = get_type_hints(_type)
+            sig = inspect.signature(_type)
+            for param in sig.parameters.values():
+                is_named = param.kind not in (inspect.Parameter.VAR_KEYWORD, inspect.Parameter.VAR_POSITIONAL)
+                if not is_named or param.default is not param.empty:
+                    # pass not required params
+                    continue
+
+                param_annotation = type_hints.get(param.name, None)
+                if param_annotation is None:
+                    # suppose it permits None
+                    kwargs[param.name] = None
+                    continue
+
+                origin = get_origin(param_annotation)
+                if origin is not None:
+                    if origin is typing.Union:
+                        # indirectly find out that param_annotation is typing.Optional
+                        union_args = get_args(param_annotation)
+                        if type(None) in union_args:
+                            param_annotation = type(None)
+                        else:
+                            param_annotation = union_args[0]
+                    else:
+                        param_annotation = origin
+
+                self.assertTrue(callable(param_annotation))
+
+                if param_annotation in all_builtins:
+                    param_value = param_annotation()
+
+                elif param_annotation in special_values:
+                    param_value = special_values[param_annotation]
+
+                else:
+                    # something complex
+                    param_value = self._get_type_value(param_annotation)
+
+                kwargs[param.name] = param_value
+
+            instance = _type(**kwargs)
+            return instance
+
+        def _test_class(self, _class: typing.Type):
+            instance_value = self._get_type_value(_class)
+
+            self.assertIsInstance(str(instance_value), str)
+            self.assertIsInstance(repr(instance_value), str)
+
+        def test_str_and_repr_methods(self):
+            testing_module = self.get_testing_module()
+            for module_attr_name in dir(testing_module):
+                module_obj = getattr(testing_module, module_attr_name)
+                if (not inspect.isclass(module_obj) or
+                        module_obj.__module__ != testing_module.__name__ or
+                        (not dataclasses.is_dataclass(module_obj) and
+                         not issubclass(module_obj, enum.Enum) and
+                         not (issubclass(module_obj, tuple) and hasattr(module_obj, '_asdict')))):
+                    continue
+
+                self._test_class(module_obj)

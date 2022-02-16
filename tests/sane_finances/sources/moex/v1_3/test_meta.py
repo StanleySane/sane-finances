@@ -12,6 +12,7 @@ from sane_finances.sources.moex.v1_3.meta import (
     Market, TradeEngine, Board,
     SecurityValue, SecurityInfo, MoexSecurityHistoryDownloadParameters, MoexSecuritiesInfoDownloadParameters,
     MoexDownloadParametersFactory, GlobalIndexData)
+
 from .common import CommonTestCases
 from .fakes import FakeMoexDownloadParameterValuesStorage
 
@@ -269,3 +270,10 @@ class TestMoexDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
             boards=(board,))
 
         return FakeMoexDownloadParameterValuesStorage(global_index_data)
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.moex.v1_3 import meta
+        return meta

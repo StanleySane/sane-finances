@@ -88,3 +88,10 @@ class TestSolactiveDownloadParametersFactory(CommonTestCases.CommonDownloadParam
 
     def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
         return SolactiveDownloadParameterValuesStorage()
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.solactive.v2018 import meta
+        return meta

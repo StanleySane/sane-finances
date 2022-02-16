@@ -94,3 +94,10 @@ class TestYahooDownloadParametersFactory(CommonTestCases.CommonDownloadParameter
 
     def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
         return YahooFinanceDownloadParameterValuesStorage()
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.yahoo.v8 import meta
+        return meta
