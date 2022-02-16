@@ -196,6 +196,25 @@ class TestSpdjStringDataDownloader(unittest.TestCase):
 
         self.assertEqual(result.downloaded_string, self.fake_data)
 
+    def test_paginate_download_instruments_info_parameters_Success(self):
+        params = SpdjIndexesInfoDownloadParameters.safe_create(
+            index_finder_filter=None,
+            page_number=1)
+        test_steps = 10  # number of first pages to test
+
+        self.assertGreaterEqual(test_steps, 2)
+
+        current_step = 1
+        current_page_number = 1  # start from one
+        for paginated_params in self.string_data_downloader.paginate_download_instruments_info_parameters(params):
+            self.assertEqual(paginated_params.page_number, current_page_number)
+
+            current_page_number += self.string_data_downloader.info_results_per_page
+            current_step += 1
+            if current_step > test_steps:
+                # limit pages for test purpose because pagination in this exporter is infinite by design
+                break
+
     def test_download_instruments_info_string_Success(self):
         params = SpdjIndexesInfoDownloadParameters.safe_create(
             index_finder_filter=None,

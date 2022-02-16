@@ -385,6 +385,17 @@ class InstrumentStringDataDownloader(abc.ABC):
         """
         raise NotImplementedError
 
+    def paginate_download_instruments_info_parameters(self, parameters) -> typing.Iterable[typing.Any]:
+        """ Takes parameters value, analyzes it and returns sequence of similar parameters,
+        but paginated for downloading of instrument info data, if it needed.
+
+        Default implementation does nothing and returns its arguments without modification.
+
+        :param parameters: Source specific info download parameters to paginate.
+        :return: Iterable of paginated arguments.
+        """
+        yield parameters
+
     @abc.abstractmethod
     def download_instruments_info_string(self, parameters) -> DownloadStringResult:
         """ Downloads data for set of instruments as string and returns it.
