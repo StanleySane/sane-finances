@@ -256,6 +256,7 @@ class SpdjIndexFinderFiltersParser:
 
             groups[field_name] = IndexFinderFilterGroup.safe_create(name=field_name, label=label)
 
+        worked_values = {}
         has_any = False
         for m_checkbox in checkbox_pattern.finditer(html):
             checkbox_str = m_checkbox.group()
@@ -282,11 +283,21 @@ class SpdjIndexFinderFiltersParser:
             label = m_checkbox_label_pattern.group('label')
             value = m_checkbox_value_pattern.group('value')
 
+            if not value:
+                self.logger.info(f"'value' attribute in empty in HTML: {checkbox_str!r}")
+                continue
+
             if field_name not in groups:
                 self.logger.error(f"Index finder filter group {field_name!r} not found in HTML")
                 raise ParseError(f"Unexpected HTML format. Index finder filter group {field_name!r} not found")
 
+            if value in worked_values:
+                self.logger.info(f"Index finder filter with value {value!r} for label {label} "
+                                 f"already worked for label {worked_values[value]!r}")
+                continue
+
             has_any = True
+            worked_values[value] = label
             yield IndexFinderFilter.safe_create(group=groups[field_name], label=label, value=value)
 
         if not has_any:
