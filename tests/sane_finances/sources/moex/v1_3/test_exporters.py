@@ -116,7 +116,6 @@ class TestMoexDownloadParameterValuesStorage(unittest.TestCase):
 
         # noinspection PyTypeChecker
         value = self.storage.get_dynamic_enum_value_by_key(None, 42)
-
         self.assertIsNone(value)
 
     def test_get_dynamic_enum_value_by_choice_Success(self):
@@ -130,7 +129,6 @@ class TestMoexDownloadParameterValuesStorage(unittest.TestCase):
 
         # noinspection PyTypeChecker
         value = self.storage.get_dynamic_enum_value_by_choice(None, '42')
-
         self.assertIsNone(value)
 
     def test_get_dynamic_enum_value_by_choice_RaiseWhenWrongChoice(self):
@@ -142,25 +140,21 @@ class TestMoexDownloadParameterValuesStorage(unittest.TestCase):
     def test_get_all_parameter_values_for_Success(self):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
-            value = self.storage.get_all_parameter_values_for(dynamic_enum_type)
-
-            self.assertIsNotNone(value)
+            values = list(self.storage.get_all_parameter_values_for(dynamic_enum_type))
+            self.assertGreaterEqual(len(values), 1)
 
         # noinspection PyTypeChecker
         value = self.storage.get_all_parameter_values_for(None)
-
         self.assertIsNone(value)
 
     def test_get_parameter_type_choices_Success(self):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
             choices = self.storage.get_parameter_type_choices(dynamic_enum_type)
-
-            self.assertIsNotNone(choices)
+            self.assertGreaterEqual(len(choices), 1)
 
         # noinspection PyTypeChecker
         choices = self.storage.get_parameter_type_choices(None)
-
         self.assertIsNone(choices)
 
 

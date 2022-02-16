@@ -211,19 +211,19 @@ class IndexInfo(InstrumentInfoProvider):
 class SpdjIndexesInfoDownloadParameters(typing.NamedTuple):
     """ Container for ``SpdjStringDataDownloader.download_instruments_info_string parameters``.
     """
-    index_finder_filter: typing.Optional[IndexFinderFilter]
     page_number: Annotated[int, Volatile(generator=lambda ctx: 1, stub_value=1)]
+    index_finder_filter: IndexFinderFilter = None
 
     @classmethod
     def safe_create(
             cls: typing.Type['SpdjIndexesInfoDownloadParameters'],
             *,
-            index_finder_filter: typing.Optional[IndexFinderFilter],
-            page_number: int) -> 'SpdjIndexesInfoDownloadParameters':
+            page_number: int,
+            index_finder_filter: IndexFinderFilter = None) -> 'SpdjIndexesInfoDownloadParameters':
         """ Create new instance of ``SpdjIndexesInfoDownloadParameters`` with arguments check.
 
-        :param index_finder_filter: Index finder filters or ``None``.
         :param page_number: Number of page to download.
+        :param index_finder_filter: Index finder filters or ``None``.
         :return: ``SpdjIndexesInfoDownloadParameters`` instance.
         """
         if index_finder_filter is not None and not isinstance(index_finder_filter, IndexFinderFilter):

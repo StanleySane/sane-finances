@@ -100,48 +100,40 @@ class TestMsciIndexDownloadParameterValuesStorage(unittest.TestCase):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
             value = self.storage.get_dynamic_enum_value_by_key(dynamic_enum_type, 'ID')
-
             self.assertIsNotNone(value)
 
         # noinspection PyTypeChecker
         value = self.storage.get_dynamic_enum_value_by_key(None, 'ID')
-
         self.assertIsNone(value)
 
     def test_get_dynamic_enum_value_by_choice_Success(self):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
             value = self.storage.get_dynamic_enum_value_by_choice(dynamic_enum_type, 'ID')
-
             self.assertIsNotNone(value)
 
         # noinspection PyTypeChecker
         value = self.storage.get_dynamic_enum_value_by_choice(None, 'ID')
-
         self.assertIsNone(value)
 
     def test_get_all_parameter_values_for_Success(self):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
-            value = self.storage.get_all_parameter_values_for(dynamic_enum_type)
-
-            self.assertIsNotNone(value)
+            values = list(self.storage.get_all_parameter_values_for(dynamic_enum_type))
+            self.assertGreaterEqual(len(values), 1)
 
         # noinspection PyTypeChecker
         value = self.storage.get_all_parameter_values_for(None)
-
         self.assertIsNone(value)
 
     def test_get_parameter_type_choices_Success(self):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
             choices = self.storage.get_parameter_type_choices(dynamic_enum_type)
-
-            self.assertIsNotNone(choices)
+            self.assertGreaterEqual(len(choices), 1)
 
         # noinspection PyTypeChecker
         choices = self.storage.get_parameter_type_choices(None)
-
         self.assertIsNone(choices)
 
 

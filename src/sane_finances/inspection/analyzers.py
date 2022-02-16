@@ -354,7 +354,11 @@ class InstanceBuilder:
 
                 origin = get_origin(param_annotation)
                 if origin is not None:
-                    param_annotation = origin
+                    if origin is typing.Union and param.default is None:
+                        # indirectly find out that param_annotation is typing.Optional
+                        param_annotation = param.annotation
+                    else:
+                        param_annotation = origin
 
                 attr_type: typing.Any  # to fix https://youtrack.jetbrains.com/issue/PY-42287
                 last_matched_factory = collections.deque(
@@ -573,6 +577,11 @@ class FlattenedAnnotatedInstanceAnalyzer(FlattenedInstanceAnalyzer):
 
             origin = get_origin(annotation)
             if origin is not None:
+                if origin is typing.Union:
+                    raise ValueError(
+                        f"Attribute {attr_name!r} in {_type} "
+                        f"has not available annotation typing.Union or typing.Optional")
+
                 annotation = origin
 
             is_primitive_type = bool(tuple(

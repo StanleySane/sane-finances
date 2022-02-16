@@ -39,7 +39,11 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
         self.downloader = downloader
 
         # headers for HTTP
-        self.headers: typing.Dict[str, str] = {}
+        self.headers: typing.Dict[str, str] = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/39.0.2171.95 Safari/537.36'
+        }
 
         self.language_id = '1'
         self.get_child_index = True
@@ -156,7 +160,11 @@ class SpdjDownloadParameterValuesStorage(SpdjDynamicEnumTypeManager, DownloadPar
         self.meta_json_language_id = '1'
 
         # headers for HTTP
-        self.headers: typing.Dict[str, str] = {}
+        self.headers: typing.Dict[str, str] = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/39.0.2171.95 Safari/537.36'
+        }
 
         self._extended_managed_types: typing.Dict[typing.Type, typing.Tuple] = {
             Currency: (self._get_currency_choices,),
@@ -207,7 +215,7 @@ class SpdjDownloadParameterValuesStorage(SpdjDynamicEnumTypeManager, DownloadPar
     def reload(self) -> None:
         index_meta_data = self._reload_meta_from_history()
         index_finder_filters = self._reload_meta_from_index_finder()
-        index_meta_data._replace(index_finder_filters=index_finder_filters)
+        index_meta_data = index_meta_data._replace(index_finder_filters=index_finder_filters)
 
         self.index_meta_data = index_meta_data
 

@@ -5,8 +5,11 @@ import inspect
 import typing
 import unittest
 
+from sane_finances.inspection import analyzers
+
 from sane_finances.sources.base import (
-    InstrumentExporterFactory, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+    InstrumentExporterFactory, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
+    DownloadParameterValuesStorage)
 from sane_finances.sources.generic import get_all_instrument_exporters
 from ..communication.fakes import FakeDownloader
 
@@ -22,25 +25,62 @@ class CommonTestCases:  # hide test cases from unittest discovery
                 -> InstrumentHistoryDownloadParameters:
             raise NotImplementedError
 
+        def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+            raise NotImplementedError
+
         def test_download_history_parameters_class_Success(self):
             factory = self.get_download_parameters_factory()
 
             self.assertTrue(inspect.isclass(factory.download_history_parameters_class))
+
+        def test_download_history_parameters_class_IsAnalyzable(self):
+            factory = self.get_download_parameters_factory()
+            download_parameter_values_storage = self.get_download_parameter_values_storage()
+
+            _ = analyzers.FlattenedAnnotatedInstanceAnalyzer(
+                factory.download_history_parameters_class,
+                download_parameter_values_storage,
+                '')
 
         def test_download_history_parameters_factory_Success(self):
             factory = self.get_download_parameters_factory()
 
             self.assertTrue(callable(factory.download_history_parameters_factory))
 
+        def test_download_history_parameters_factory_IsAnalyzable(self):
+            factory = self.get_download_parameters_factory()
+            download_parameter_values_storage = self.get_download_parameter_values_storage()
+
+            _ = analyzers.InstanceBuilder(
+                factory.download_history_parameters_factory,
+                download_parameter_values_storage)
+
         def test_download_info_parameters_class_Success(self):
             factory = self.get_download_parameters_factory()
 
             self.assertTrue(inspect.isclass(factory.download_info_parameters_class))
 
+        def test_download_info_parameters_class_IsAnalyzable(self):
+            factory = self.get_download_parameters_factory()
+            download_parameter_values_storage = self.get_download_parameter_values_storage()
+
+            _ = analyzers.FlattenedAnnotatedInstanceAnalyzer(
+                factory.download_info_parameters_class,
+                download_parameter_values_storage,
+                '')
+
         def test_download_info_parameters_factory_Success(self):
             factory = self.get_download_parameters_factory()
 
             self.assertTrue(callable(factory.download_info_parameters_factory))
+
+        def test_download_info_parameters_factory_IsAnalyzable(self):
+            factory = self.get_download_parameters_factory()
+            download_parameter_values_storage = self.get_download_parameter_values_storage()
+
+            _ = analyzers.InstanceBuilder(
+                factory.download_info_parameters_factory,
+                download_parameter_values_storage)
 
         def test_generate_history_download_parameters_from_SuccessWithNone(self):
             factory = self.get_download_parameters_factory()
