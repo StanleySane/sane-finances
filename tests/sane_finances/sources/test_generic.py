@@ -81,7 +81,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
             moment_from,
             moment_to))
 
-        self.assertSequenceEqual(history, expected_result)
+        self.assertSequenceEqual(expected_result, history)
         self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, 1)
         self.assertTrue(all(result.is_correct
                             for result
@@ -159,13 +159,17 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         # (note that FakeInstrumentStringDataDownloader DO NOT adjust parameters here)
         parse_result = self._prepare_expected_result(moment_from, moment_to)
         expected_result = parse_result * pages_count
+        expected_parameters = [
+            FakeInstrumentHistoryDownloadParameters(moment_from + datetime.timedelta(days=page_num))
+            for page_num
+            in range(pages_count)]
 
         # imitate pagination:
-        # noinspection PyShadowingNames
+        # noinspection PyUnusedLocal,PyShadowingNames
         def fake_paginate_download_instrument_history_parameters(parameters, moment_from, moment_to):
             page_begin = moment_from
             while page_begin < moment_to:
-                yield parameters, page_begin, page_begin
+                yield FakeInstrumentHistoryDownloadParameters(page_begin), page_begin, page_begin
                 page_begin += datetime.timedelta(days=1)
 
         self.string_data_downloader.paginate_download_instrument_history_parameters = \
@@ -178,7 +182,9 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
             moment_from,
             moment_to))
 
-        self.assertSequenceEqual(history, expected_result)
+        self.assertSequenceEqual(expected_result, history)
+        self.assertSequenceEqual(expected_parameters,
+                                 self.string_data_downloader.download_instrument_history_string_parameters)
         self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, pages_count)
         self.assertTrue(all(result.is_correct
                             for result
@@ -318,9 +324,10 @@ class TestGenericInstrumentsInfoExporter(unittest.TestCase):
         expected_result = parse_result * pages_count
 
         # imitate pagination:
+        # noinspection PyUnusedLocal
         def fake_paginate_download_instruments_info_parameters(parameters):
-            for _ in range(pages_count):
-                yield parameters
+            for page_number in range(1, pages_count + 1):
+                yield page_number
 
         self.string_data_downloader.paginate_download_instruments_info_parameters = \
             fake_paginate_download_instruments_info_parameters
@@ -329,7 +336,9 @@ class TestGenericInstrumentsInfoExporter(unittest.TestCase):
 
         info_list = list(self.exporter.export_instruments_info(None))
 
-        self.assertSequenceEqual(info_list, expected_result)
+        self.assertSequenceEqual(expected_result, info_list)
+        self.assertSequenceEqual(list(range(1, pages_count + 1)),
+                                 self.string_data_downloader.download_instruments_info_string_parameters)
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, pages_count)
         self.assertTrue(all(result.is_correct
                             for result

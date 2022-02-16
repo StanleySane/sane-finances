@@ -81,7 +81,7 @@ class GenericInstrumentHistoryValuesExporter(InstrumentHistoryValuesExporter):
                         moment_to=paged_moment_to)
 
             except DownloadError as ex:
-                raise SourceDownloadError(f"Download error {ex} for parameters '{parameters}', "
+                raise SourceDownloadError(f"Download error {ex} for parameters '{paged_parameters}', "
                                           f"moment from '{moment_from.isoformat()}', "
                                           f"moment to '{moment_to.isoformat()}'") from ex
 
@@ -147,9 +147,9 @@ class GenericInstrumentsInfoExporter(InstrumentsInfoExporter):
 
             try:
                 info_data_string_result = \
-                    self.string_data_downloader.download_instruments_info_string(parameters=parameters)
+                    self.string_data_downloader.download_instruments_info_string(parameters=paged_parameters)
             except DownloadError as ex:
-                raise SourceDownloadError(f"Download error {ex} for parameters '{parameters}'") from ex
+                raise SourceDownloadError(f"Download error {ex} for parameters '{paged_parameters}'") from ex
 
             try:
                 info_providers = self.info_parser.parse(info_data_string_result.downloaded_string)

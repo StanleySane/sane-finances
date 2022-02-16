@@ -35,6 +35,14 @@ class FakeInstrumentValueProvider(InstrumentValueProvider):
 
 class FakeInstrumentHistoryDownloadParameters(InstrumentHistoryDownloadParameters):
 
+    def __init__(self, value: typing.Any = None):
+        self.value = value
+
+    def __eq__(self, other):
+        if isinstance(other, FakeInstrumentHistoryDownloadParameters):
+            return self.value == other.value
+        return False
+
     def clone_with_instrument_info_parameters(
             self,
             info_download_parameters: typing.Any,
@@ -49,7 +57,10 @@ class FakeInstrumentStringDataDownloader(InstrumentStringDataDownloader):
         self.fake_history_string = fake_history_string
 
         self.download_instruments_info_string_results: typing.List[DownloadStringResult] = []
+        self.download_instruments_info_string_parameters: typing.List[typing.Any] = []
+
         self.download_instrument_history_string_results: typing.List[DownloadStringResult] = []
+        self.download_instrument_history_string_parameters: typing.List[InstrumentHistoryDownloadParameters] = []
 
         self.download_instruments_info_string_counter = 0
         self.download_instrument_history_string_counter = 0
@@ -81,6 +92,8 @@ class FakeInstrumentStringDataDownloader(InstrumentStringDataDownloader):
         self.download_instruments_info_string_counter += 1
         result = DownloadStringResult(self.fake_info_string)
         self.download_instruments_info_string_results.append(result)
+        self.download_instruments_info_string_parameters.append(parameters
+                                                                )
         return result
 
     def download_instrument_history_string(
@@ -94,6 +107,8 @@ class FakeInstrumentStringDataDownloader(InstrumentStringDataDownloader):
         self.download_instrument_history_string_counter += 1
         result = DownloadStringResult(self.fake_history_string)
         self.download_instrument_history_string_results.append(result)
+        self.download_instrument_history_string_parameters.append(parameters)
+
         return result
 
 
