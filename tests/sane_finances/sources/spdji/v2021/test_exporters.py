@@ -52,22 +52,22 @@ class TestSpdjDownloadParameterValuesStorage(unittest.TestCase):
         self.fake_index_meta_data = IndexMetaData(
             currencies=(Currency.safe_create(currency_code=self.expected_key_value),),
             return_types=(ReturnType.safe_create(return_type_code=self.expected_key_value, return_type_name='PRICE'),),
-            index_finder_filters=(
-                IndexFinderFilter.safe_create(
-                    group=group,
-                    label='Label 1',
-                    value=self.expected_key_value),
-                IndexFinderFilter.safe_create(
-                    group=group,
-                    label='Label 2',
-                    value=self.expected_key_value + '2')
-            )
+            index_finder_filters=()
         )
+        self.fake_index_finder_filters = (
+            IndexFinderFilter.safe_create(
+                group=group,
+                label='Label 1',
+                value=self.expected_key_value),
+            IndexFinderFilter.safe_create(
+                group=group,
+                label='Label 2',
+                value=self.expected_key_value + '2'))
 
         self.downloader = FakeDownloader(None)
         self.meta_json_parser = FakeSpdjMetaJsonParser(self.fake_index_meta_data)
         self.index_finder_filters_parser = FakeSpdjIndexFinderFiltersParser(
-            self.fake_index_meta_data.index_finder_filters)
+            self.fake_index_finder_filters)
 
         self.storage = SpdjDownloadParameterValuesStorage(
             self.downloader,
@@ -129,18 +129,18 @@ class TestSpdjDownloadParameterValuesStorage(unittest.TestCase):
     def test_get_all_parameter_values_for_Success(self):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
-            value = self.storage.get_all_parameter_values_for(dynamic_enum_type)
-            self.assertIsNotNone(value)
+            values = list(self.storage.get_all_parameter_values_for(dynamic_enum_type))
+            self.assertGreaterEqual(len(values), 1)
 
         # noinspection PyTypeChecker
-        value = self.storage.get_all_parameter_values_for(None)
-        self.assertIsNone(value)
+        values = self.storage.get_all_parameter_values_for(None)
+        self.assertIsNone(values)
 
     def test_get_parameter_type_choices_Success(self):
         all_types = self.storage.get_all_managed_types()
         for dynamic_enum_type in all_types:
             choices = self.storage.get_parameter_type_choices(dynamic_enum_type)
-            self.assertIsNotNone(choices)
+            self.assertGreaterEqual(len(choices), 1)
 
         # noinspection PyTypeChecker
         choices = self.storage.get_parameter_type_choices(None)

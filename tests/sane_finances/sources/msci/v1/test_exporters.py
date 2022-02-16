@@ -416,7 +416,7 @@ class TestMsciIndexDownloadParameterValuesStorage(unittest.TestCase):
         for dynamic_enum_type in all_types:
             choices = self.storage.get_parameter_type_choices(dynamic_enum_type)
 
-            self.assertIsNotNone(choices)
+            self.assertGreaterEqual(len(choices), 1)
 
         # noinspection PyTypeChecker
         choices = self.storage.get_parameter_type_choices(None)

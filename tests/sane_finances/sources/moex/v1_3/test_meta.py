@@ -6,12 +6,14 @@ import decimal
 import unittest
 
 from sane_finances.sources.base import (
-    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
+    DownloadParameterValuesStorage)
 from sane_finances.sources.moex.v1_3.meta import (
     Market, TradeEngine, Board,
     SecurityValue, SecurityInfo, MoexSecurityHistoryDownloadParameters, MoexSecuritiesInfoDownloadParameters,
-    MoexDownloadParametersFactory)
+    MoexDownloadParametersFactory, GlobalIndexData)
 from .common import CommonTestCases
+from .fakes import FakeMoexDownloadParameterValuesStorage
 
 
 class TestTradeEngine(unittest.TestCase):
@@ -240,3 +242,30 @@ class TestMoexDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
         # noinspection PyTypeChecker
         expected_result = MoexSecurityHistoryDownloadParameters(board=None, sec_id=None, start=0)
         return expected_result
+
+    def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+        engine = TradeEngine(
+            identity=42,
+            name='stock',
+            title='Фондовый рынок и рынок депозитов')
+        market = Market(
+            identity=42,
+            trade_engine=engine,
+            name='index',
+            title='Рынок акций',
+            marketplace='MXSE')
+        board = Board(
+            identity=42,
+            trade_engine=engine,
+            market=market,
+            boardid='TQTF',
+            title='Т+: ETF - безадрес.',
+            is_traded=True,
+            has_candles=True,
+            is_primary=True)
+        global_index_data = GlobalIndexData(
+            trade_engines=(engine,),
+            markets=(market,),
+            boards=(board,))
+
+        return FakeMoexDownloadParameterValuesStorage(global_index_data)

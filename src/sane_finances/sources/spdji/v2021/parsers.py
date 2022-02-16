@@ -227,16 +227,25 @@ class SpdjIndexFinderFiltersParser:
         """
 
         group_pattern = re.compile(
-            r'<\w*?[^>]*?data-fieldname\s*?=\s*?"(?P<field_name>.*?)".*?>.*?'
-            r'data-gtm-category\s*?=\s*?"Index Finder Filter".*?'
-            r'data-gtm-label\s*?=\s*?"(?P<label>.*?)".*?>',
+            r'<div[^>]*?data-fieldname\s*?=\s*?"(?P<field_name>[^"]*?)".*?>.*?'
+            r'<\w*?[^>]*?data-gtm-category\s*?=\s*?"Index Finder Filter".*?'
+            r'data-gtm-label\s*?=\s*?"(?P<label>[^"]*?)".*?>',
             re.IGNORECASE | re.MULTILINE | re.DOTALL
         )
         checkbox_pattern = re.compile(
-            r'<input[^>]*?name\s*?=\s*?"(?P<field_name>.*?)".*?'
-            r'data-gtm-category\s*?=\s*?"Index Finder Filter".*?'
-            r'data-gtm-label\s*?=\s*?"(?P<label>.*?)".*?'
-            r'value\s*?=\s*?"(?P<value>.*?)".*?>',
+            r'<input[^>]*?data-gtm-category\s*?=\s*?"Index Finder Filter"[^>]*?>',
+            re.IGNORECASE | re.MULTILINE | re.DOTALL
+        )
+        checkbox_name_pattern = re.compile(
+            r'name\s*?=\s*?"(?P<field_name>[^"]*?)"',
+            re.IGNORECASE | re.MULTILINE | re.DOTALL
+        )
+        checkbox_label_pattern = re.compile(
+            r'data-gtm-label\s*?=\s*?"(?P<label>[^"]*?)"',
+            re.IGNORECASE | re.MULTILINE | re.DOTALL
+        )
+        checkbox_value_pattern = re.compile(
+            r'value\s*?=\s*?"(?P<value>[^"]*?)"',
             re.IGNORECASE | re.MULTILINE | re.DOTALL
         )
 
@@ -249,9 +258,29 @@ class SpdjIndexFinderFiltersParser:
 
         has_any = False
         for m_checkbox in checkbox_pattern.finditer(html):
-            field_name = m_checkbox.group('field_name')
-            label = m_checkbox.group('label')
-            value = m_checkbox.group('value')
+            checkbox_str = m_checkbox.group()
+
+            m_checkbox_name_pattern = checkbox_name_pattern.search(checkbox_str)
+            if m_checkbox_name_pattern is None:
+                self.logger.error(f"Not found 'name' attribute in HTML {checkbox_str!r}")
+                raise ParseError(f"Unexpected HTML format. "
+                                 f"Not found 'name' attribute in HTML {checkbox_str!r}")
+
+            m_checkbox_label_pattern = checkbox_label_pattern.search(checkbox_str)
+            if m_checkbox_label_pattern is None:
+                self.logger.error(f"Not found 'data-gtm-label' attribute in HTML {checkbox_str!r}")
+                raise ParseError(f"Unexpected HTML format. "
+                                 f"Not found 'data-gtm-label' attribute in HTML {checkbox_str!r}")
+
+            m_checkbox_value_pattern = checkbox_value_pattern.search(checkbox_str)
+            if m_checkbox_value_pattern is None:
+                self.logger.error(f"Not found 'value' attribute in HTML {checkbox_str!r}")
+                raise ParseError(f"Unexpected HTML format. "
+                                 f"Not found 'value' attribute in HTML {checkbox_str!r}")
+
+            field_name = m_checkbox_name_pattern.group('field_name')
+            label = m_checkbox_label_pattern.group('label')
+            value = m_checkbox_value_pattern.group('value')
 
             if field_name not in groups:
                 self.logger.error(f"Index finder filter group {field_name!r} not found in HTML")

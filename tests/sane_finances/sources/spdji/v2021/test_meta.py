@@ -6,11 +6,13 @@ import decimal
 import unittest
 
 from sane_finances.sources.base import (
-    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
+    DownloadParameterValuesStorage)
 from sane_finances.sources.spdji.v2021.meta import (
-    IndexFinderFilterGroup, IndexFinderFilter, Currency, ReturnType, IndexLevel, IndexInfo,
+    IndexFinderFilterGroup, IndexFinderFilter, Currency, ReturnType, IndexLevel, IndexInfo, IndexMetaData,
     SpdjIndexesInfoDownloadParameters, SpdjIndexHistoryDownloadParameters, SpdjDownloadParametersFactory)
 from .common import CommonTestCases
+from .fakes import FakeSpdjDownloadParameterValuesStorage
 
 
 class TestIndexFinderFilterGroup(unittest.TestCase):
@@ -165,3 +167,22 @@ class TestSpdjDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
             currency=None,
             return_type=None)
         return expected_result
+
+    def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+        fake_index_meta_data = IndexMetaData(
+            currencies=(Currency.safe_create(currency_code='USD'),),
+            return_types=(ReturnType.safe_create(return_type_code='P-', return_type_name='PRICE'),),
+            index_finder_filters=()
+        )
+        group = IndexFinderFilterGroup.safe_create(name='GROUP_NAME', label='Group Label')
+        fake_index_finder_filters = (
+            IndexFinderFilter.safe_create(
+                group=group,
+                label='Label 1',
+                value='ID'),
+            IndexFinderFilter.safe_create(
+                group=group,
+                label='Label 2',
+                value='ID2'))
+
+        return FakeSpdjDownloadParameterValuesStorage(fake_index_meta_data, fake_index_finder_filters)

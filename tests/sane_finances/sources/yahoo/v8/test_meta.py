@@ -6,7 +6,9 @@ import decimal
 import unittest
 
 from sane_finances.sources.base import (
-    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
+    DownloadParameterValuesStorage)
+from sane_finances.sources.yahoo.v8.exporters import YahooFinanceDownloadParameterValuesStorage
 from sane_finances.sources.yahoo.v8.meta import (
     InstrumentQuoteValue, InstrumentQuoteInfo,
     YahooInstrumentInfoDownloadParameters, YahooInstrumentHistoryDownloadParameters, YahooDownloadParametersFactory)
@@ -89,3 +91,6 @@ class TestYahooDownloadParametersFactory(CommonTestCases.CommonDownloadParameter
         # noinspection PyTypeChecker
         expected_result = YahooInstrumentHistoryDownloadParameters(symbol=None)
         return expected_result
+
+    def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+        return YahooFinanceDownloadParameterValuesStorage()
