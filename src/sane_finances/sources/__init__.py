@@ -7,7 +7,8 @@ from . import moex
 from . import cbr
 from . import yahoo
 from . import spdji
+from . import ishares
 
 # when new source appears, add it here in the same way
 
-__all__ = ['msci', 'solactive', 'moex', 'cbr', 'yahoo', 'spdji']
+__all__ = ['msci', 'solactive', 'moex', 'cbr', 'yahoo', 'spdji', 'ishares']

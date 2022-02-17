@@ -328,8 +328,6 @@ class SpdjApiActualityChecker(ApiActualityChecker):
         self.history_values_parser = history_values_parser
         self.info_parser = info_parser
 
-        self._json_index_id = '340'  # S&P 500
-
     def check(self):
         self.logger.info("Check actuality via indexes list")
 
@@ -376,7 +374,7 @@ class SpdjApiActualityChecker(ApiActualityChecker):
         self.logger.info("Actuality check was successful")
 
 
-class SpdjExporterFactory(InstrumentExporterFactory):  # pylint: disable=invalid-name
+class SpdjExporterFactory(InstrumentExporterFactory):
     """ Factory class for create instances of S&P Dow Jones data exporter.
     """
     name: str = 'S&P Dow Jones Indices. Version 2021'
