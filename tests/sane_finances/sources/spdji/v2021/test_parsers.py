@@ -7,8 +7,8 @@ import unittest
 import re
 
 from sane_finances.sources.base import ParseError, InstrumentInfoEmpty
-from sane_finances.sources.spdji.v2021.meta import IndexInfo, IndexLevel, IndexMetaData, Currency, ReturnType, \
-    IndexFinderFilterGroup, IndexFinderFilter
+from sane_finances.sources.spdji.v2021.meta import (
+    IndexInfo, IndexLevel, IndexMetaData, Currency, ReturnType, IndexFinderFilterGroup, IndexFinderFilter)
 from sane_finances.sources.spdji.v2021.parsers import (
     SpdjHistoryJsonParser, SpdjInfoJsonParser, SpdjMetaJsonParser, SpdjIndexFinderFiltersParser)
 
@@ -82,7 +82,7 @@ def get_valid_info_json() -> str:
     return valid_json
 
 
-class TestSpdjJsonParser(unittest.TestCase):
+class TestSpdjHistoryJsonParser(unittest.TestCase):
 
     def setUp(self) -> None:
         self.parser = SpdjHistoryJsonParser()
