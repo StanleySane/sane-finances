@@ -85,6 +85,7 @@ class GenericInstrumentHistoryValuesExporter(InstrumentHistoryValuesExporter):
                                           f"moment from '{moment_from.isoformat()}', "
                                           f"moment to '{moment_to.isoformat()}'") from ex
 
+            self.history_values_parser.download_parameters = paged_parameters
             try:
                 values_providers = self.history_values_parser.parse(
                     history_data_string_result.downloaded_string,
@@ -151,6 +152,7 @@ class GenericInstrumentsInfoExporter(InstrumentsInfoExporter):
             except DownloadError as ex:
                 raise SourceDownloadError(f"Download error {ex} for parameters '{paged_parameters}'") from ex
 
+            self.info_parser.download_parameters = paged_parameters
             try:
                 info_providers = self.info_parser.parse(info_data_string_result.downloaded_string)
 
