@@ -408,7 +408,10 @@ class InstrumentStringDataDownloader(abc.ABC):
 
 class InstrumentValuesHistoryParser(abc.ABC):
     """ Parser for ``InstrumentValue`` history.
+
+    Attribute ``download_parameters`` contains parameters instance used when text to parse was downloaded
     """
+    download_parameters: InstrumentHistoryDownloadParameters
 
     @abc.abstractmethod
     def parse(
@@ -430,7 +433,10 @@ class InstrumentValuesHistoryParser(abc.ABC):
 
 class InstrumentInfoParser(abc.ABC):
     """ Parser for ``InstrumentInfo``.
+
+    Attribute ``download_parameters`` contains parameters instance used when text to parse was downloaded
     """
+    download_parameters: typing.Any
 
     @abc.abstractmethod
     def parse(self, raw_text: str) -> typing.Iterable[InstrumentInfoProvider]:
