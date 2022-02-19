@@ -160,6 +160,12 @@ class CommonTestCases:  # hide test cases from unittest discovery
         def get_source_instrument_exporter_factory(self) -> typing.Type:
             raise NotImplementedError
 
+        def test_settings(self):
+            source_instrument_exporter_factory = self.get_source_instrument_exporter_factory()
+
+            self.assertTrue(inspect.isclass(source_instrument_exporter_factory))
+            self.assertTrue(issubclass(source_instrument_exporter_factory, InstrumentExporterFactory))
+
         def test_source_register(self):
             # at first read all available exporters
             all_exporters = get_all_instrument_exporters()
@@ -180,6 +186,11 @@ class CommonTestCases:  # hide test cases from unittest discovery
 
         def get_testing_module(self):
             raise NotImplementedError
+
+        def test_settings(self):
+            testing_module = self.get_testing_module()
+
+            self.assertTrue(inspect.ismodule(testing_module))
 
         def _get_type_value(self, _type: typing.Type):
             if inspect.isclass(_type) and issubclass(_type, enum.Enum):
