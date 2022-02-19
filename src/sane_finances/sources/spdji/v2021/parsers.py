@@ -51,8 +51,15 @@ class SpdjHistoryJsonParser(InstrumentValuesHistoryParser):
         :param float_value: Value to convert
         :return: Decimal value.
         """
-        str_value = f"{float_value:.8f}"
-        value = decimal.Decimal(str_value)
+        if isinstance(float_value, float):
+            str_value = f"{float_value:.8f}"
+        else:
+            str_value = str(float_value)
+        try:
+            value = decimal.Decimal(str_value)
+        except decimal.DecimalException as ex:
+            raise ParseError(f"Can't convert value {float_value!r} to decimal") from ex
+
         return value
 
     # noinspection PyMethodMayBeStatic
@@ -64,7 +71,10 @@ class SpdjHistoryJsonParser(InstrumentValuesHistoryParser):
         :return: Python datetime
         """
         first_date = datetime.datetime(1970, 1, 1, tzinfo=tzinfo)
-        moment = first_date + datetime.timedelta(milliseconds=unix_moment)
+        try:
+            moment = first_date + datetime.timedelta(milliseconds=unix_moment)
+        except (TypeError, OverflowError) as ex:
+            raise ParseError(f"Can't convert value {unix_moment!r} to timedelta milliseconds") from ex
         return moment
 
     def parse(  # pylint: disable=arguments-renamed

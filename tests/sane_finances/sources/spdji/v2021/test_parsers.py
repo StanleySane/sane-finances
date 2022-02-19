@@ -91,7 +91,14 @@ class TestSpdjHistoryJsonParser(unittest.TestCase):
         with self.assertRaisesRegex(ParseError, message):
             _ = list(self.parser.parse(invalid_json, tzinfo=None))
 
-    def test_convert_float_to_decimal_Success(self):
+    def test_convert_float_to_decimal_SuccessWithString(self):
+        float_value = '42.42'
+        expected_result = decimal.Decimal('42.42')
+
+        # noinspection PyTypeChecker
+        self.assertEqual(expected_result, self.parser.convert_float_to_decimal(float_value))
+
+    def test_convert_float_to_decimal_SuccessWithFloat(self):
         float_value = 42.123456789
         expected_result = decimal.Decimal('42.12345679')
 
@@ -127,6 +134,20 @@ class TestSpdjHistoryJsonParser(unittest.TestCase):
         invalid_json = '[42]'
 
         self.check_parse_raise(invalid_json, 'is not dict')
+
+    def test_parse_RaiseWhenWrongDate(self):
+        valid_json = get_valid_history_json()
+        # corrupt data
+        invalid_json = re.sub(r'"effectiveDate":\d*?,', '"effectiveDate":"WRONG_DATE",', valid_json)
+
+        self.check_parse_raise(invalid_json, "Can't convert value.*?to timedelta milliseconds")
+
+    def test_parse_RaiseWhenWrongValue(self):
+        valid_json = get_valid_history_json()
+        # corrupt data
+        invalid_json = re.sub(r'"indexValue":.*?,', '"indexValue":"WRONG_VALUE",', valid_json)
+
+        self.check_parse_raise(invalid_json, "Can't convert value.*?to decimal")
 
     def test_parse_RaiseWhenNoDetailField(self):
         invalid_json = '''{
