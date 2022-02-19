@@ -18,4 +18,4 @@ So in many (or most) cases you may need legal permission for access to source AP
 This library does not provide any of such permission by design.
 
 Before use of this library you have to examine user agreement of each source independently.
-If you have no special permission or breach user agreement then use library on you own responsibility.
+If you have no special permission or breach user agreement then use library on your own responsibility.
