@@ -19,7 +19,7 @@ from ....annotations import LEGACY_ANNOTATIONS
 if LEGACY_ANNOTATIONS:  # pragma: no cover
     from ....annotations import Annotated
 else:  # pragma: no cover
-    from typing import Annotated
+    from typing import Annotated  # pylint: disable=no-name-in-module
 
 
 class RateFrequencies(enum.Enum):

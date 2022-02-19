@@ -25,7 +25,7 @@ class InstrumentInfoParameter:
             country: str
 
         class HistoryParams:
-            ''' Despite of fact that ISIN uniquely identifies concrete instrument
+            ''' Despite the fact that ISIN uniquely identifies concrete instrument
                 this API demands region and country codes for instrument values history.
                 So we mark them properly.
             '''

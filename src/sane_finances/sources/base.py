@@ -70,6 +70,18 @@ class InstrumentValuesHistoryEmpty(SourceError):
         super().__init__("Empty history data")
 
 
+class InstrumentInfoEmpty(SourceError):
+    """ Used by ``InstrumentInfoParser.parse`` to signal about empty info data
+        if such data is acceptable.
+
+        This is not signal about error but signal about acceptable empty sequence.
+    """
+    def __init__(self):
+        """ Initialize exception.
+        """
+        super().__init__("Empty info data")
+
+
 class InstrumentValue(typing.NamedTuple):
     """ Contains minimum (generic) data for value (e.g. price) representation
         of some financial instrument (stock, index etc.) on a moment in time.
@@ -169,7 +181,7 @@ class DynamicEnumTypeManager(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_dynamic_enum_key(self, instance):
+    def get_dynamic_enum_key(self, instance: typing.Any) -> typing.Any:
         """ Get dynamic enum key of instance.
 
         Returned key must be immutable and simply serializable,
@@ -198,7 +210,7 @@ class DownloadParameterValuesStorage(DynamicEnumTypeManager, abc.ABC):
         """ Get value of dynamic enum type by its key.
 
         Key may be any value, uniquely identifying dynamic enum value of type 'cls'.
-        Usually it's a some ID attribute.
+        Usually it's a some attribute ID.
 
         :param cls: Dynamic enum type (usually class) which value need to get.
         :param key: Key of required dynamic enum value.
@@ -207,7 +219,7 @@ class DownloadParameterValuesStorage(DynamicEnumTypeManager, abc.ABC):
         """
         return None
 
-    def get_dynamic_enum_value_by_choice(self, cls: type, choice) -> typing.Any:
+    def get_dynamic_enum_value_by_choice(self, cls: type, choice: str) -> typing.Any:
         """ Get value of dynamic enum type by its choice.
 
         Choice is stringified value of dynamic enum key.
@@ -254,7 +266,7 @@ class DownloadParameterValuesStorage(DynamicEnumTypeManager, abc.ABC):
         Grouped options may be combined with ungrouped options within a single list
         (such as the 'unknown' option in this example).
 
-        Thus choices treats like select tag options (with optgroups) in HTML,
+        Thus, choices treats like select tag options (with optgroups) in HTML,
         or like the choices option for field in ``Django`` model API.
 
         :param cls: Dynamic enum type (usually class) which choices need to get.
@@ -272,7 +284,7 @@ class InstrumentStringDataDownloader(abc.ABC):
     def adjust_date_from_to_holidays(cls, date_from: datetime.datetime) -> datetime.datetime:
         """ Utility function for adjusting `date from` value due to well known holidays.
 
-        If `date from` locates into any holiday's interval, then shift it to nearest previous working day.
+        If `date from` locates into any holiday's interval, then shift it to the nearest previous working day.
         The point is not to lose instrument history moment if its value calculates only at working days.
 
         Supports Christmas holidays and New Year's Eve.
@@ -301,11 +313,11 @@ class InstrumentStringDataDownloader(abc.ABC):
         (used in `InstrumentHistoryValuesExporter.export_instrument_history_values`)
 
         For instance, if 'moment_from' equals to 01-01-2000 (New Year holiday),
-        then this method may adjust it to nearest working day, i.e. 24-12-1999,
+        then this method may adjust it to the nearest working day, i.e. 24-12-1999,
         when instrument history value was set.
 
         Or, if downloader got interval of many years in parameters,
-        but exporter need only couple of months,
+        but exporter need only a couple of months,
         then this method will return similar parameters,
         but with smaller interval of dates in it, required to download requested data::
 
@@ -317,11 +329,11 @@ class InstrumentStringDataDownloader(abc.ABC):
 
         Notice that returned parameters interval may differ from requested by exporter interval
         (in this example ['2005-01-01', '2005-03-01'] vs ['2004-12-01', '2005-03-01'])
-        It depends of downloader policy and dates themself.
+        It depends on downloader policy and dates themselves.
 
         :param parameters: Source specific history download parameters to adjust.
         :param moment_from: Moment from to adjust.
-        :param moment_to: Moment to to adjust.
+        :param moment_to: Moment to adjust.
         :return: Tuple of adjusted arguments.
         """
         if moment_from > moment_to:
@@ -341,9 +353,9 @@ class InstrumentStringDataDownloader(abc.ABC):
         but paginated for downloading of most granular data in interval (daily usually).
 
         For instance, if downloader got interval of several years in parameters,
-        but daily data can be downloaded only in one year interval,
+        but daily data can be downloaded only in one-year interval,
         then this method will return sequence of similar parameters,
-        but with one year interval of dates in them::
+        but with one-year interval of dates in them::
 
             paginate_download_instrument_history_parameters({df=2000, dt=2005, ...}) ->
                 ({df=2000, dt=2000, ...}, {df=2001, dt=2001, ...}, {df=2002, dt=2002, ...},
@@ -353,7 +365,7 @@ class InstrumentStringDataDownloader(abc.ABC):
 
         :param parameters: Source specific history download parameters to paginate.
         :param moment_from: Moment from to paginate.
-        :param moment_to: Moment to to paginate.
+        :param moment_to: Moment to paginate.
         :return: Iterable of tuples of paginated arguments.
         """
         yield parameters, moment_from, moment_to
@@ -373,6 +385,17 @@ class InstrumentStringDataDownloader(abc.ABC):
         """
         raise NotImplementedError
 
+    def paginate_download_instruments_info_parameters(self, parameters) -> typing.Iterable[typing.Any]:
+        """ Takes parameters value, analyzes it and returns sequence of similar parameters,
+        but paginated for downloading of instrument info data, if it needed.
+
+        Default implementation does nothing and returns its arguments without modification.
+
+        :param parameters: Source specific info download parameters to paginate.
+        :return: Iterable of paginated arguments.
+        """
+        yield parameters
+
     @abc.abstractmethod
     def download_instruments_info_string(self, parameters) -> DownloadStringResult:
         """ Downloads data for set of instruments as string and returns it.
@@ -385,7 +408,10 @@ class InstrumentStringDataDownloader(abc.ABC):
 
 class InstrumentValuesHistoryParser(abc.ABC):
     """ Parser for ``InstrumentValue`` history.
+
+    Attribute ``download_parameters`` contains parameters instance used when text to parse was downloaded
     """
+    download_parameters: InstrumentHistoryDownloadParameters
 
     @abc.abstractmethod
     def parse(
@@ -407,7 +433,10 @@ class InstrumentValuesHistoryParser(abc.ABC):
 
 class InstrumentInfoParser(abc.ABC):
     """ Parser for ``InstrumentInfo``.
+
+    Attribute ``download_parameters`` contains parameters instance used when text to parse was downloaded
     """
+    download_parameters: typing.Any
 
     @abc.abstractmethod
     def parse(self, raw_text: str) -> typing.Iterable[InstrumentInfoProvider]:

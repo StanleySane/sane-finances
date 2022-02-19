@@ -319,7 +319,7 @@ class MsciIndexPanelDataJsonParser:
                     for identity, name
                     in self._parse_block('options', index_suites_block_item))
 
-        # unfortunately, daily and monthly frequencies hard-coded in site scripts
+        # unfortunately, daily and monthly frequencies hard-coded in site scripts,
         # so we forced to assume their codes here
         frequencies_dict = {frequency.identity: frequency for frequency in frequencies}
         if self.daily_frequency_id not in frequencies_dict:

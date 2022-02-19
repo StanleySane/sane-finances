@@ -5,8 +5,10 @@ import datetime
 import decimal
 import unittest
 
-from sane_finances.sources.base import InstrumentValue, InstrumentInfo, DownloadParametersFactory, \
-    InstrumentHistoryDownloadParameters
+from sane_finances.sources.base import (
+    InstrumentValue, InstrumentInfo, DownloadParametersFactory,
+    InstrumentHistoryDownloadParameters, DownloadParameterValuesStorage)
+from sane_finances.sources.msci.v1.exporters import MsciIndexDownloadParameterValuesStorage
 from sane_finances.sources.msci.v1.meta import (
     Scopes, Formats, Context,
     IndexValue, IndexInfo, MsciIndexHistoryDownloadParameters, MsciIndexesInfoDownloadParameters,
@@ -165,3 +167,13 @@ class TestMsciDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
             date_from=None,
             date_to=None)
         return expected_result
+
+    def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+        return MsciIndexDownloadParameterValuesStorage()
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.msci.v1 import meta
+        return meta

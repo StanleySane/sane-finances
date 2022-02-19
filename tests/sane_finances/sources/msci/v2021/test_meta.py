@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import datetime
 import decimal
 import unittest
 
 from sane_finances.sources.base import (
-    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
+    DownloadParameterValuesStorage)
 from sane_finances.sources.msci.v2021.meta import (
     Market, Currency, IndexLevel, IndexSuite, Size, Style, Scopes,
     IndexValue, IndexInfo, MsciIndexHistoryDownloadParameters, MsciIndexesInfoDownloadParameters,
-    MsciDownloadParametersFactory)
+    MsciDownloadParametersFactory, Frequency, IndexSuiteGroup, IndexPanelData)
+
 from .common import CommonTestCases
+from .fakes import FakeMsciIndexDownloadParameterValuesStorage
 
 
 class TestMarket(unittest.TestCase):
@@ -198,3 +200,29 @@ class TestMsciDownloadParametersFactory(CommonTestCases.CommonDownloadParameters
         # noinspection PyTypeChecker
         expected_result = MsciIndexHistoryDownloadParameters(index_code=None, currency=None, index_variant=None)
         return expected_result
+
+    def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+        daily_frequency = Frequency(identity='DAILY', name='Daily')
+        monthly_frequency = Frequency(identity='END_OF_MONTH', name='Monthly')
+        index_suite_group = IndexSuiteGroup(name='ID')
+        fake_index_panel_data = IndexPanelData(
+            markets=(Market(identity='ID', name='NAME'),),
+            currencies=(Currency(identity='ID', name='NAME'),),
+            index_levels=(IndexLevel(identity='ID', name='NAME'),),
+            frequencies=(daily_frequency, monthly_frequency, Frequency(identity='ID', name='NAME')),
+            index_suite_groups=(index_suite_group,),
+            index_suites=(IndexSuite(identity='ID', name='NAME', group=index_suite_group),),
+            sizes=(Size(identity='ID', name='NAME'),),
+            styles=(Style(identity='ID', name='NAME'),),
+            daily_frequency=daily_frequency,
+            monthly_frequency=monthly_frequency
+        )
+
+        return FakeMsciIndexDownloadParameterValuesStorage(fake_index_panel_data)
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.msci.v2021 import meta
+        return meta

@@ -15,7 +15,7 @@ from .base import (
     InstrumentValuesHistoryParser, InstrumentInfoParser, InstrumentHistoryValuesExporter,
     InstrumentInfoProvider, InstrumentValueProvider,
     InstrumentExporterRegistry, InstrumentExporterFactory, InstrumentsInfoExporter,
-    InstrumentHistoryDownloadParameters, InstrumentValuesHistoryEmpty, MaxPagesLimitExceeded)
+    InstrumentHistoryDownloadParameters, InstrumentValuesHistoryEmpty, MaxPagesLimitExceeded, InstrumentInfoEmpty)
 
 logging.getLogger().addHandler(logging.NullHandler())
 
@@ -81,10 +81,11 @@ class GenericInstrumentHistoryValuesExporter(InstrumentHistoryValuesExporter):
                         moment_to=paged_moment_to)
 
             except DownloadError as ex:
-                raise SourceDownloadError(f"Download error {ex} for parameters '{parameters}', "
+                raise SourceDownloadError(f"Download error {ex} for parameters '{paged_parameters}', "
                                           f"moment from '{moment_from.isoformat()}', "
                                           f"moment to '{moment_to.isoformat()}'") from ex
 
+            self.history_values_parser.download_parameters = paged_parameters
             try:
                 values_providers = self.history_values_parser.parse(
                     history_data_string_result.downloaded_string,
@@ -115,6 +116,7 @@ class GenericInstrumentHistoryValuesExporter(InstrumentHistoryValuesExporter):
 class GenericInstrumentsInfoExporter(InstrumentsInfoExporter):
     """ Generic, used by default, instrument info exporter.
     """
+    max_paged_parameters = 10000  # limit of paged parameters
 
     def __init__(
             self,
@@ -134,19 +136,38 @@ class GenericInstrumentsInfoExporter(InstrumentsInfoExporter):
         self.logger.info(f"Begin to export instruments info "
                          f"by parameters: {parameters}")
 
-        info_data_string_result = \
-            self.string_data_downloader.download_instruments_info_string(parameters=parameters)
+        paged_parameters_index = 0
+        for paged_parameters in self.string_data_downloader.paginate_download_instruments_info_parameters(
+                parameters=parameters):
+            self.logger.info(f"Begin to export instrument info "
+                             f"by paged parameters: {paged_parameters}")
 
-        try:
-            info_providers = self.info_parser.parse(info_data_string_result.downloaded_string)
+            paged_parameters_index += 1
+            if paged_parameters_index >= self.max_paged_parameters:
+                raise MaxPagesLimitExceeded(self.max_paged_parameters)
 
-            yield from info_providers
+            try:
+                info_data_string_result = \
+                    self.string_data_downloader.download_instruments_info_string(parameters=paged_parameters)
+            except DownloadError as ex:
+                raise SourceDownloadError(f"Download error {ex} for parameters '{paged_parameters}'") from ex
 
-        except Exception:
-            info_data_string_result.set_correctness(False)
-            raise
+            self.info_parser.download_parameters = paged_parameters
+            try:
+                info_providers = self.info_parser.parse(info_data_string_result.downloaded_string)
 
-        info_data_string_result.set_correctness(True)
+                yield from info_providers
+
+            except InstrumentInfoEmpty:
+                # info data exhausted
+                info_data_string_result.set_correctness(True)
+                return
+
+            except Exception:
+                info_data_string_result.set_correctness(False)
+                raise
+
+            info_data_string_result.set_correctness(True)
 
 
 # Global registry for all available sources and theirs factories

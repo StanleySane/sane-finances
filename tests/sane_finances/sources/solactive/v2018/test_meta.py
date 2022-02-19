@@ -5,8 +5,11 @@ import datetime
 import decimal
 import unittest
 
+from sane_finances.sources.solactive.v2018.exporters import SolactiveDownloadParameterValuesStorage
+
 from sane_finances.sources.base import (
-    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
+    DownloadParameterValuesStorage)
 from sane_finances.sources.solactive.v2018.meta import (
     IndexValue, IndexInfo, SolactiveIndexesInfoDownloadParameters, SolactiveIndexHistoryDownloadParameters,
     SolactiveDownloadParametersFactory)
@@ -53,7 +56,9 @@ class TestIndexInfo(unittest.TestCase):
 class TestSolactiveIndexesInfoDownloadParameters(unittest.TestCase):
 
     def test_safe_create_Success(self):
-        _ = SolactiveIndexesInfoDownloadParameters.safe_create()
+        self.assertIsInstance(
+            SolactiveIndexesInfoDownloadParameters.safe_create(),
+            SolactiveIndexesInfoDownloadParameters)
 
 
 class TestSolactiveIndexHistoryDownloadParameters(unittest.TestCase):
@@ -80,3 +85,13 @@ class TestSolactiveDownloadParametersFactory(CommonTestCases.CommonDownloadParam
         # noinspection PyTypeChecker
         expected_result = SolactiveIndexHistoryDownloadParameters(isin=None)
         return expected_result
+
+    def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+        return SolactiveDownloadParameterValuesStorage()
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.solactive.v2018 import meta
+        return meta

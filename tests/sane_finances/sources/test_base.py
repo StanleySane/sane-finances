@@ -50,16 +50,16 @@ class TestDownloadParameterValuesStorage(unittest.TestCase):
     def test_get_dynamic_enum_value_by_key_AlwaysReturnNone(self):
         storage = SomeDownloadParameterValuesStorage()
 
-        self.assertIsNone(storage.get_dynamic_enum_value_by_key(int, 1))
+        self.assertIsNone(storage.get_dynamic_enum_value_by_key(int, 42))
         self.assertIsNone(storage.get_dynamic_enum_value_by_key(str, ''))
         self.assertIsNone(storage.get_dynamic_enum_value_by_key(DownloadParameterValuesStorage, None))
 
     def test_get_dynamic_enum_value_by_choice_AlwaysReturnNone(self):
         storage = SomeDownloadParameterValuesStorage()
 
-        self.assertIsNone(storage.get_dynamic_enum_value_by_choice(int, 1))
+        self.assertIsNone(storage.get_dynamic_enum_value_by_choice(int, '42'))
         self.assertIsNone(storage.get_dynamic_enum_value_by_choice(str, ''))
-        self.assertIsNone(storage.get_dynamic_enum_value_by_choice(DownloadParameterValuesStorage, None))
+        self.assertIsNone(storage.get_dynamic_enum_value_by_choice(DownloadParameterValuesStorage, ''))
 
     def test_get_all_parameter_values_for_AlwaysReturnNone(self):
         storage = SomeDownloadParameterValuesStorage()

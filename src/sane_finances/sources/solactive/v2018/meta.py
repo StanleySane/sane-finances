@@ -19,7 +19,7 @@ from ....annotations import LEGACY_ANNOTATIONS
 if LEGACY_ANNOTATIONS:  # pragma: no cover
     from ....annotations import Annotated
 else:  # pragma: no cover
-    from typing import Annotated
+    from typing import Annotated  # pylint: disable=no-name-in-module
 
 
 class IndexHistoryTypes(enum.Enum):
@@ -36,7 +36,7 @@ class FileExtensions(enum.Enum):
 
 
 class FieldNames(enum.Enum):
-    """ Field name in JSON.
+    """ Field names in JSON.
     """
     INDEX_ID = 'indexId'
     TIMESTAMP = 'timestamp'
@@ -82,7 +82,7 @@ class IndexInfo(InstrumentInfoProvider):
         self.name = str(name)
 
     def __str__(self):
-        return (f"Splactive index ("
+        return (f"Solactive index ("
                 f"isin={self.isin}, "
                 f"name={self.name})")
 

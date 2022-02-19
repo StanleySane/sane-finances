@@ -5,8 +5,10 @@ import datetime
 import decimal
 import unittest
 
+from sane_finances.sources.cbr.v2016.exporters import CbrCurrencyDownloadParameterValuesStorage
 from sane_finances.sources.base import (
-    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters)
+    InstrumentValue, InstrumentInfo, DownloadParametersFactory, InstrumentHistoryDownloadParameters,
+    DownloadParameterValuesStorage)
 from sane_finances.sources.cbr.v2016.meta import (
     RateFrequencies, CurrencyInfo, CurrencyRateValue,
     CbrCurrenciesInfoDownloadParameters, CbrCurrencyHistoryDownloadParameters, CbrDownloadParametersFactory)
@@ -90,3 +92,13 @@ class TestCbrDownloadParametersFactory(CommonTestCases.CommonDownloadParametersF
         # noinspection PyTypeChecker
         expected_result = CbrCurrencyHistoryDownloadParameters(currency_id=None)
         return expected_result
+
+    def get_download_parameter_values_storage(self) -> DownloadParameterValuesStorage:
+        return CbrCurrencyDownloadParameterValuesStorage()
+
+
+class TestMetaStrAndRepr(CommonTestCases.CommonStrAndReprTests):
+
+    def get_testing_module(self):
+        from sane_finances.sources.cbr.v2016 import meta
+        return meta

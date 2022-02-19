@@ -117,7 +117,7 @@ class MsciStringDataDownloader(InstrumentStringDataDownloader):
         assert moment_from <= moment_to
 
         if moment_from.date() == moment_to.date():
-            # if we need data only for one day, than we can't split it
+            # if we need data only for one day, then we can't split it
             yield parameters, moment_from, moment_to
             return
 
@@ -132,7 +132,7 @@ class MsciStringDataDownloader(InstrumentStringDataDownloader):
             yield parameters, moment_from, moment_to
             return
 
-        # otherwise we split interval in two parts:
+        # otherwise, we split interval in two parts:
         # - first part (data older than 5 years) will treat in monthly frequency
         # - second part (last 5 years) will treat in any desired frequency
 
@@ -412,11 +412,14 @@ class MsciIndexDownloadParameterValuesStorage(DownloadParameterValuesStorage):
         suite: IndexSuites
         group: IndexSuiteGroups
 
-        suites_without_groups = [(suite.value, suite.description) for suite in IndexSuites if suite.group is None]
+        suites_without_groups = [(suite.value, suite.description)  # pylint: disable=undefined-variable
+                                 for suite
+                                 in IndexSuites
+                                 if suite.group is None]
         grouped_suites = [(group.value, [(suite.value, suite.description)
                                          for suite
                                          in IndexSuites
-                                         if suite.group == group])
+                                         if suite.group == group])  # pylint: disable=undefined-variable
                           for group in IndexSuiteGroups]
 
         return suites_without_groups + grouped_suites

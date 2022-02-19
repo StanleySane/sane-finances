@@ -3,6 +3,7 @@
 [pypi_project]: https://pypi.org/project/sane-finances/
 [pypi_badge]: https://img.shields.io/pypi/v/sane-finances.svg
 [![pypi badge][pypi_badge]][pypi_project]
+![tests](https://github.com/StanleySane/sane-finances/actions/workflows/tests.yml/badge.svg)
 
 A library for download and parse financial data from various sources.
 
@@ -17,4 +18,4 @@ So in many (or most) cases you may need legal permission for access to source AP
 This library does not provide any of such permission by design.
 
 Before use of this library you have to examine user agreement of each source independently.
-If you have no special permission or breach user agreement then use library on you own responsibility.
+If you have no special permission or breach user agreement then use library on your own responsibility.

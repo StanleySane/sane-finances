@@ -53,7 +53,7 @@ class Volatile:
     but we need to download it every day. So we store this interval somewhere in configuration
     and mark date_to as ``Volatile`` with reevaluating as ``date.today()``
     every time we fetch parameters from configuration.
-    Thus interval widened every day without modifying configuration.
+    Thus, interval widened every day without modifying configuration.
 
     ::
 
@@ -93,7 +93,7 @@ class Volatile:
 
 # After PEP 560, internal typing API was substantially reworked.
 # This is especially important for Protocol class which uses internal APIs
-# quite extensivelly.
+# quite extensively.
 PEP_560 = sys.version_info[:3] >= (3, 7, 0)
 
 try:  # pragma: no cover
@@ -122,6 +122,7 @@ elif PEP_560:  # pragma: no cover
 
     # noinspection PyUnresolvedReferences,PyProtectedMember
     class _AnnotatedAlias(typing._GenericAlias, _root=True):
+        # pylint: disable=consider-using-f-string
         """Runtime representation of an annotated type.
         At its core 'Annotated[t, dec1, dec2, ...]' is an alias for the type 't'
         with extra annotations. The alias behaves like a normal typing alias,
@@ -162,6 +163,7 @@ elif PEP_560:  # pragma: no cover
             return hash((self.__origin__, self.__metadata__))
 
     class Annotated:
+        # pylint: disable=consider-using-f-string
         """Add context specific metadata to a type.
         Example: Annotated[int, runtime_check.Unsigned] indicates to the
         hypothetical runtime_check module that this type is an unsigned int.

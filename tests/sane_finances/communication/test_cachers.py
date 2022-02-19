@@ -116,7 +116,7 @@ class TestInMemoryCacher(unittest.TestCase):
 
         self.assertEqual(self.cacher.expiry, new_expiry)
 
-    def test_CahersHasNoCommonState(self):
+    def test_CachersHasNoCommonState(self):
         expiry_days = 1
         self.cacher.expiry = datetime.timedelta(days=expiry_days)
 
@@ -156,7 +156,7 @@ class TestInMemoryCacher(unittest.TestCase):
 
         self.assertTrue(got_from_cache)
         self.assertEqual(result, self.expected_result)
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertTrue(self.cacher.has('', [], {}))
         self.assertFalse(self.cacher.is_empty())
 
@@ -165,7 +165,7 @@ class TestInMemoryCacher(unittest.TestCase):
         self.expiry_calculator.now = now
 
         # cache should be cleaned
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertFalse(self.cacher.has('', [], {}))
         self.assertTrue(self.cacher.is_empty())
 
@@ -188,7 +188,7 @@ class TestInMemoryCacher(unittest.TestCase):
 
         self.assertTrue(got_from_cache)
         self.assertEqual(result, self.expected_result)
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertTrue(self.cacher.has('', [], {}))
         self.assertFalse(self.cacher.is_empty())
 
@@ -197,7 +197,7 @@ class TestInMemoryCacher(unittest.TestCase):
         self.expiry_calculator.now = now
 
         # items should persist
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertTrue(self.cacher.has('', [], {}))
         self.assertFalse(self.cacher.is_empty())
 
@@ -219,7 +219,7 @@ class TestInMemoryCacher(unittest.TestCase):
 
         self.assertTrue(got_from_cache)
         self.assertEqual(result, self.expected_result)
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertTrue(self.cacher.has('', [], {}))
         self.assertFalse(self.cacher.is_empty())
 
@@ -241,7 +241,7 @@ class TestInMemoryCacher(unittest.TestCase):
         self.cacher.expiry = datetime.timedelta(minutes=minutes_spent/2)
 
         # cache should be cleaned
-        self.assertEqual(self.retriever_count, 2)  # didn't changed
+        self.assertEqual(self.retriever_count, 2)  # didn't change
         self.assertFalse(self.cacher.has('', [], {}))
         self.assertTrue(self.cacher.is_empty())
 
@@ -262,7 +262,7 @@ class TestInMemoryCacher(unittest.TestCase):
 
         self.assertTrue(got_from_cache)
         self.assertEqual(result, self.expected_result)
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertTrue(self.cacher.has('', [], {}))
         self.assertFalse(self.cacher.is_empty())
 
@@ -270,7 +270,7 @@ class TestInMemoryCacher(unittest.TestCase):
         was_in_cache = self.cacher.drop('', [], {})
 
         self.assertTrue(was_in_cache)
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertFalse(self.cacher.has('', [], {}))
         self.assertTrue(self.cacher.is_empty())
 
@@ -278,7 +278,7 @@ class TestInMemoryCacher(unittest.TestCase):
         was_in_cache = self.cacher.drop('', [], {})
 
         self.assertFalse(was_in_cache)
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertFalse(self.cacher.has('', [], {}))
         self.assertTrue(self.cacher.is_empty())
 
@@ -299,13 +299,13 @@ class TestInMemoryCacher(unittest.TestCase):
 
         self.assertTrue(got_from_cache)
         self.assertEqual(result, self.expected_result)
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertTrue(self.cacher.has('', [], {}))
         self.assertFalse(self.cacher.is_empty())
 
         # clear all
         self.cacher.full_clear()
 
-        self.assertEqual(self.retriever_count, 1)  # didn't changed
+        self.assertEqual(self.retriever_count, 1)  # didn't change
         self.assertFalse(self.cacher.has('', [], {}))
         self.assertTrue(self.cacher.is_empty())

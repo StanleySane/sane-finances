@@ -32,13 +32,16 @@ min-public-methods=1
 max-attributes=11
 
 # Maximum number of locals for function / method body
-max-locals=25
+max-locals=26
 
 # Maximum number of branch for function / method body
 max-branches=26
 
 # Maximum number of statements in function / method body
 max-statements=100
+
+# Maximum number of return / yield for function / method body
+max-returns=10
 
 [SIMILARITIES]
 

@@ -19,7 +19,7 @@ from ....annotations import Volatile, LEGACY_ANNOTATIONS, Description
 if LEGACY_ANNOTATIONS:  # pragma: no cover
     from ....annotations import Annotated
 else:  # pragma: no cover
-    from typing import Annotated
+    from typing import Annotated  # pylint: disable=no-name-in-module
 
 
 class Scopes(enum.Enum):
@@ -256,7 +256,7 @@ class IndexSuites(enum.Enum):
 
     def __repr__(self):
         return f"<{self.__class__.__name__}.{self.name}: " \
-               f"'{self.value}' ('{self.description}', {self.group.value!r})>"
+               f"'{self.value}' ('{self.description}', {(None if self.group is None else self.group.value)!r})>"
 
     NONE = ('C', 'None', None)
 

@@ -236,7 +236,7 @@ class TestCbrCurrencyDownloadParameterValuesStorage(unittest.TestCase):
         for dynamic_enum_type in all_types:
             choices = self.storage.get_parameter_type_choices(dynamic_enum_type)
 
-            self.assertIsNotNone(choices)
+            self.assertGreaterEqual(len(choices), 1)
 
         # noinspection PyTypeChecker
         choices = self.storage.get_parameter_type_choices(None)
@@ -248,7 +248,7 @@ class TestCbrCurrencyDownloadParameterValuesStorage(unittest.TestCase):
         self.assertIsNone(choices)
 
 
-class TestCbrCurrencyRatesExporterFactory(CommonTestCases.CommonIndexExporterFactoryTests):
+class TestCbrCurrencyRatesExporterFactory(CommonTestCases.CommonInstrumentExporterFactoryTests):
 
     def get_exporter_factory(self) -> InstrumentExporterFactory:
         return CbrCurrencyRatesExporterFactory()

@@ -7,11 +7,14 @@ import inspect
 import typing
 import unittest
 
+from sane_finances.communication.downloader import DownloadError
+
 from sane_finances.sources import generic
 from sane_finances.sources.cbr.v2016.exporters import CbrCurrencyRatesExporterFactory
 from sane_finances.sources.base import (
     MaxPagesLimitExceeded, InstrumentValuesHistoryEmpty,
-    InstrumentInfo, InstrumentValue, ParseError, InstrumentExporterFactory, InstrumentExporterRegistry)
+    InstrumentInfo, InstrumentValue, ParseError, InstrumentExporterFactory, InstrumentExporterRegistry,
+    SourceDownloadError, InstrumentInfoEmpty)
 from .fakes import (
     FakeInstrumentHistoryDownloadParameters, FakeInstrumentInfoProvider, FakeInstrumentValueProvider,
     FakeInstrumentInfoParser, FakeInstrumentValuesHistoryParser, FakeInstrumentStringDataDownloader,
@@ -66,7 +69,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
 
         return expected_result
 
-    def test_success(self):
+    def test_Success(self):
         moment_from = moment_to = datetime.datetime(2000, 1, 1)
 
         expected_result = [FakeInstrumentValueProvider(InstrumentValue(
@@ -78,7 +81,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
             moment_from,
             moment_to))
 
-        self.assertSequenceEqual(history, expected_result)
+        self.assertSequenceEqual(expected_result, history)
         self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, 1)
         self.assertTrue(all(result.is_correct
                             for result
@@ -86,7 +89,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, 1)
 
-    def test_returnOnlyAskedInterval(self):
+    def test_ReturnOnlyAskedInterval(self):
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=5)
 
@@ -109,7 +112,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, 1)
 
-    def test_returnOnlyAdjustedInterval(self):
+    def test_ReturnOnlyAdjustedInterval(self):
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=5)
         adjusted_moment_from = moment_from - datetime.timedelta(days=2)
@@ -146,7 +149,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, 1)
 
-    def test_returnCallDownloadAndParseMultipleTimes(self):
+    def test_ReturnCallDownloadAndParseMultipleTimes(self):
         pages_count = 5
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=pages_count)
@@ -156,13 +159,17 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         # (note that FakeInstrumentStringDataDownloader DO NOT adjust parameters here)
         parse_result = self._prepare_expected_result(moment_from, moment_to)
         expected_result = parse_result * pages_count
+        expected_parameters = [
+            FakeInstrumentHistoryDownloadParameters(moment_from + datetime.timedelta(days=page_num))
+            for page_num
+            in range(pages_count)]
 
         # imitate pagination:
-        # noinspection PyShadowingNames
+        # noinspection PyUnusedLocal,PyShadowingNames
         def fake_paginate_download_instrument_history_parameters(parameters, moment_from, moment_to):
             page_begin = moment_from
             while page_begin < moment_to:
-                yield parameters, page_begin, page_begin
+                yield FakeInstrumentHistoryDownloadParameters(page_begin), page_begin, page_begin
                 page_begin += datetime.timedelta(days=1)
 
         self.string_data_downloader.paginate_download_instrument_history_parameters = \
@@ -175,7 +182,9 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
             moment_from,
             moment_to))
 
-        self.assertSequenceEqual(history, expected_result)
+        self.assertSequenceEqual(expected_result, history)
+        self.assertSequenceEqual(expected_parameters,
+                                 self.string_data_downloader.download_instrument_history_string_parameters)
         self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, pages_count)
         self.assertTrue(all(result.is_correct
                             for result
@@ -183,7 +192,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
         self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, 0)
         self.assertEqual(self.history_values_parser.parse_counter, pages_count)
 
-    def test_raiseWhenPagesLimitExceeded(self):
+    def test_RaiseWhenPagesLimitExceeded(self):
         pages_count = 5
         max_paged_parameters = pages_count - 1
         moment_from = datetime.datetime(2000, 1, 1)
@@ -218,7 +227,19 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
                             for result
                             in self.string_data_downloader.download_instrument_history_string_results))
 
-    def test_raiseWhenMomentFromGreaterThenMomentTo(self):
+    def test_RaiseWhenDownloadError(self):
+        moment_from = datetime.datetime(2000, 1, 1)
+        moment_to = moment_from + datetime.timedelta(days=5)
+
+        self.string_data_downloader.download_exception = DownloadError()
+
+        with self.assertRaises(SourceDownloadError):
+            _ = list(self.exporter.export_instrument_history_values(
+                FakeInstrumentHistoryDownloadParameters(),
+                moment_from,
+                moment_to))
+
+    def test_RaiseWhenMomentFromGreaterThenMomentTo(self):
         self.history_values_parser.fake_result = []
 
         moment_from = datetime.datetime(2000, 1, 1)
@@ -230,7 +251,7 @@ class TestGenericInstrumentHistoryValuesExporter(unittest.TestCase):
                 moment_from,
                 moment_to))
 
-    def test_acceptInstrumentValuesHistoryEmptyException(self):
+    def test_AcceptInstrumentValuesHistoryEmptyException(self):
         moment_from = datetime.datetime(2000, 1, 1)
         moment_to = moment_from + datetime.timedelta(days=5)
 
@@ -280,7 +301,7 @@ class TestGenericInstrumentsInfoExporter(unittest.TestCase):
         self.exporter = generic.GenericInstrumentsInfoExporter(
             self.string_data_downloader, self.info_parser)
 
-    def test_success(self):
+    def test_Success(self):
         expected_result = [
             FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))
         ]
@@ -295,6 +316,83 @@ class TestGenericInstrumentsInfoExporter(unittest.TestCase):
                             for result
                             in self.string_data_downloader.download_instruments_info_string_results))
         self.assertEqual(self.info_parser.parse_counter, 1)
+
+    def test_ReturnCallDownloadAndParseMultipleTimes(self):
+        pages_count = 5
+
+        parse_result = [FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))]
+        expected_result = parse_result * pages_count
+
+        # imitate pagination:
+        # noinspection PyUnusedLocal
+        def fake_paginate_download_instruments_info_parameters(parameters):
+            for page_number in range(1, pages_count + 1):
+                yield page_number
+
+        self.string_data_downloader.paginate_download_instruments_info_parameters = \
+            fake_paginate_download_instruments_info_parameters
+
+        self.info_parser.fake_result = parse_result
+
+        info_list = list(self.exporter.export_instruments_info(None))
+
+        self.assertSequenceEqual(expected_result, info_list)
+        self.assertSequenceEqual(list(range(1, pages_count + 1)),
+                                 self.string_data_downloader.download_instruments_info_string_parameters)
+        self.assertEqual(self.string_data_downloader.download_instruments_info_string_counter, pages_count)
+        self.assertTrue(all(result.is_correct
+                            for result
+                            in self.string_data_downloader.download_instruments_info_string_results))
+        self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, 0)
+        self.assertEqual(self.info_parser.parse_counter, pages_count)
+
+    def test_RaiseWhenDownloadError(self):
+        self.string_data_downloader.download_exception = DownloadError()
+
+        with self.assertRaises(SourceDownloadError):
+            _ = list(self.exporter.export_instruments_info(None))
+
+    def test_RaiseWhenPagesLimitExceeded(self):
+        pages_count = 5
+        max_paged_parameters = pages_count - 1
+
+        parse_result = [FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))]
+
+        # imitate pagination:
+        def fake_paginate_download_instruments_info_parameters(parameters):
+            for _ in range(pages_count):
+                yield parameters
+
+        self.string_data_downloader.paginate_download_instruments_info_parameters = \
+            fake_paginate_download_instruments_info_parameters
+
+        self.info_parser.fake_result = parse_result
+        self.exporter.max_paged_parameters = max_paged_parameters
+
+        with self.assertRaises(MaxPagesLimitExceeded):
+            _ = list(self.exporter.export_instruments_info(None))
+
+        self.assertTrue(all(result.is_correct
+                            for result
+                            in self.string_data_downloader.download_instruments_info_string_results))
+
+    def test_AcceptInstrumentInfoEmptyException(self):
+        parse_result = [FakeInstrumentInfoProvider(InstrumentInfo(code='SOME CODE', name='SOME NAME'))]
+
+        self.info_parser.parse_exception = InstrumentInfoEmpty()
+        self.info_parser.fake_result = parse_result
+        expected_result = []
+
+        # verify arrange
+        self.assertNotEqual(parse_result, expected_result)
+
+        info_list = list(self.exporter.export_instruments_info(None))
+
+        self.assertSequenceEqual(info_list, expected_result)
+        self.assertEqual(self.string_data_downloader.download_instrument_history_string_counter, 0)
+        self.assertTrue(all(result.is_correct
+                            for result
+                            in self.string_data_downloader.download_instruments_info_string_results))
 
     def test_LastDownloadStringResultIsNotCorrectWhenError(self):
         self.info_parser.fake_result = []
