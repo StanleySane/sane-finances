@@ -23,7 +23,7 @@ disable=logging-fstring-interpolation
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=10
+max-args=12
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=1
@@ -70,6 +70,5 @@ disable=
     not-callable,
     unnecessary-pass,
     unused-argument,
-    no-self-use,
     too-few-public-methods,
     protected-access
