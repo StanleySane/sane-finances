@@ -35,18 +35,9 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
     index_finder_url = 'https://www.spglobal.com/spdji/en/index-finder/'
 
     default_headers: typing.Dict[str, str] = {
-        'Host': 'www.spglobal.com',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;'
-                  'q=0.9,image/avif,image/webp,image/apng,*/*;'
-                  'q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br, zstd',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-        'Sec-Ch-Ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
-        'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
                       'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/126.0.0.0 Safari/537.36',
+                      'Chrome/39.0.2171.95 Safari/537.36'
     }
 
     def __init__(self, downloader: Downloader):
