@@ -2,10 +2,24 @@
 # -*- coding: utf-8 -*-
 
 from sane_finances.sources.base import InstrumentExporterFactory
-from sane_finances.sources.spdji.v2024.exporters import SpdjExporterFactory
+from sane_finances.sources.spdji.v2024.exporters import SpdjExporterFactory, SpdjDownloadParameterValuesStorage
 
 from .common import CommonTestCases
 from ..v2021 import test_exporters
+
+
+class TestSpdjDownloadParameterValuesStorage(test_exporters.TestSpdjDownloadParameterValuesStorage):
+    """
+    Logic is absolutely the same as for the 2021 version
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        self.storage = SpdjDownloadParameterValuesStorage(
+            self.downloader,
+            self.meta_json_parser,
+            self.index_finder_filters_parser)
 
 
 class TestSpdjStringDataDownloader(test_exporters.TestSpdjStringDataDownloader):

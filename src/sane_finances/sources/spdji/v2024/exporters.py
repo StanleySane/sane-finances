@@ -10,7 +10,7 @@ import typing
 
 from .parsers import SpdjIndexFinderFiltersParser
 from .. import v2021
-from ..v2021.exporters import SpdjApiActualityChecker, SpdjDownloadParameterValuesStorage, SpdjDynamicEnumTypeManager
+from ..v2021.exporters import SpdjApiActualityChecker, SpdjDynamicEnumTypeManager
 from ..v2021.meta import (Currency, IndexFinderFilter, ReturnType, SpdjDownloadParametersFactory,
                           SpdjIndexHistoryDownloadParameters, SpdjIndexesInfoDownloadParameters)
 from ..v2021.parsers import SpdjHistoryJsonParser, SpdjInfoJsonParser, SpdjMetaJsonParser
@@ -48,6 +48,22 @@ class SpdjStringDataDownloader(v2021.exporters.SpdjStringDataDownloader):
 
         # headers for HTTP
         self.headers: typing.Dict[str, str] = dict(self.default_headers)
+
+
+class SpdjDownloadParameterValuesStorage(v2021.exporters.SpdjDownloadParameterValuesStorage):
+    """ Storage of instrument download parameters.
+    """
+
+    def __init__(
+            self,
+            downloader: Downloader,
+            meta_json_parser: SpdjMetaJsonParser,
+            index_finder_filters_parser: SpdjIndexFinderFiltersParser):
+        super().__init__(downloader, meta_json_parser, index_finder_filters_parser)
+        self.logger = logging.getLogger(__name__ + '.' + self.__class__.__name__)
+
+        # overload downloader headers for HTTP
+        self.headers: typing.Dict[str, str] = dict(SpdjStringDataDownloader.default_headers)
 
 
 class SpdjExporterFactory(InstrumentExporterFactory):
