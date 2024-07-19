@@ -410,12 +410,13 @@ class MsciIndexDownloadParameterValuesStorage(DownloadParameterValuesStorage):
     @staticmethod
     def _get_index_suites_choices():
         suite: IndexSuites
-        group: IndexSuiteGroups
+        group: IndexSuiteGroups  # pylint: disable=unused-variable
 
-        suites_without_groups = [(suite.value, suite.description)  # pylint: disable=undefined-variable
-                                 for suite
-                                 in IndexSuites
-                                 if suite.group is None]
+        suites_without_groups = [
+            (suite.value, suite.description)  # pylint: disable=undefined-variable, used-before-assignment
+            for suite
+            in IndexSuites
+            if suite.group is None]
         grouped_suites = [(group.value, [(suite.value, suite.description)
                                          for suite
                                          in IndexSuites

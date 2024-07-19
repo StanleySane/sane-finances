@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import gzip
 import unittest
 import unittest.mock
 import datetime
@@ -33,6 +33,7 @@ class TestUrlDownloader(unittest.TestCase):
 
     def setUp(self):
         self.http_response_read_count = 0
+        self.fake_http_response_headers = {}
 
         self.cacher = FakeExpirableCacher(initial_expiry=datetime.timedelta(days=1))
         self.downloader = UrlDownloader(self.cacher)
@@ -43,7 +44,10 @@ class TestUrlDownloader(unittest.TestCase):
         self.encoding = self.downloader.default_encoding
         mock_urlopen_patcher = unittest.mock.patch(
             'urllib.request.urlopen',
-            **{'return_value.__enter__.return_value.read': self.fake_http_response_read})
+            **{
+                'return_value.__enter__.return_value.read': self.fake_http_response_read,
+                'return_value.__enter__.return_value.headers': self.fake_http_response_headers
+            })
         mock_urlopen_patcher.start()
         self.addCleanup(mock_urlopen_patcher.stop)
 
@@ -53,7 +57,10 @@ class TestUrlDownloader(unittest.TestCase):
         if self.http_response_error is not None:
             raise self.http_response_error
 
-        return self.fake_data.encode(self.encoding)
+        if isinstance(self.fake_data, str):
+            return self.fake_data.encode(self.encoding)
+
+        return self.fake_data
 
     def test_download_string_SuccessWithParameters(self):
         url = "http://localhost"
@@ -71,6 +78,17 @@ class TestUrlDownloader(unittest.TestCase):
         result = self.downloader.download_string(url)
 
         self.assertEqual(result.downloaded_string, self.fake_data)
+        self.assertEqual(self.http_response_read_count, 1)
+
+    def test_download_string_GzipSuccess(self):
+        url = "http://localhost"
+        expected_data = self.fake_data
+        self.fake_data = gzip.compress(self.fake_data.encode(self.encoding))
+        self.fake_http_response_headers['Content-Encoding'] = 'gzip'
+
+        result = self.downloader.download_string(url)
+
+        self.assertEqual(result.downloaded_string, expected_data)
         self.assertEqual(self.http_response_read_count, 1)
 
     def test_download_string_UnicodeStringSuccess(self):

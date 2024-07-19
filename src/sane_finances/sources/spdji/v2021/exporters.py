@@ -10,6 +10,8 @@ import itertools
 import logging
 import typing
 
+from ....retry_policy import wait_and_retry
+
 from .meta import (
     IndexFinderFilterGroup, IndexFinderFilter, Currency, ReturnType,
     SpdjIndexHistoryDownloadParameters, SpdjIndexesInfoDownloadParameters, SpdjDownloadParametersFactory, IndexMetaData)
@@ -34,17 +36,19 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
     info_url = 'https://www.spglobal.com/spdji/en/util/redesign/index-finder/index-finder-json.dot'
     index_finder_url = 'https://www.spglobal.com/spdji/en/index-finder/'
 
+    default_headers: typing.Dict[str, str] = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
+                      'AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/39.0.2171.95 Safari/537.36'
+    }
+
     def __init__(self, downloader: Downloader):
         self.logger = logging.getLogger(__name__ + '.' + self.__class__.__name__)
 
         self.downloader = downloader
 
         # headers for HTTP
-        self.headers: typing.Dict[str, str] = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/39.0.2171.95 Safari/537.36'
-        }
+        self.headers: typing.Dict[str, str] = dict(self.default_headers)
 
         self.language_id = '1'
         self.get_child_index = True
@@ -98,7 +102,14 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
         self.downloader.parameters = params
         self.downloader.headers = self.headers
 
-        return self.downloader.download_string(self.history_url)
+        download_result: typing.List[typing.Optional[DownloadStringResult]] = [None]
+
+        def download_action():
+            download_result[0] = self.downloader.download_string(self.history_url)
+
+        wait_and_retry(download_action, lambda x, n: True)
+
+        return download_result[0]
 
     def download_index_info_string(
             self,
@@ -119,7 +130,14 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
         if index_finder_filter is not None:
             self.downloader.parameters.append((index_finder_filter.group.name, index_finder_filter.value))
 
-        return self.downloader.download_string(self.info_url)
+        download_result: typing.List[typing.Optional[DownloadStringResult]] = [None]
+
+        def download_action():
+            download_result[0] = self.downloader.download_string(self.info_url)
+
+        wait_and_retry(download_action, lambda x, n: True)
+
+        return download_result[0]
 
 
 class SpdjDynamicEnumTypeManager(DynamicEnumTypeManager):
@@ -169,12 +187,11 @@ class SpdjDownloadParameterValuesStorage(SpdjDynamicEnumTypeManager, DownloadPar
         self.meta_json_index_id = '340'  # S&P 500
         self.meta_json_language_id = '1'
 
+        self.history_url = SpdjStringDataDownloader.history_url
+        self.index_finder_url = SpdjStringDataDownloader.index_finder_url
+
         # headers for HTTP
-        self.headers: typing.Dict[str, str] = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/39.0.2171.95 Safari/537.36'
-        }
+        self.headers: typing.Dict[str, str] = dict(SpdjStringDataDownloader.default_headers)
 
         self._extended_managed_types: typing.Dict[typing.Type, typing.Tuple] = {
             Currency: (self._get_currency_choices,),
@@ -194,7 +211,7 @@ class SpdjDownloadParameterValuesStorage(SpdjDynamicEnumTypeManager, DownloadPar
             ('language_id', str(self.meta_json_language_id))
         ]
 
-        json_string_result = self.downloader.download_string(SpdjStringDataDownloader.history_url)
+        json_string_result = self.downloader.download_string(self.history_url)
 
         try:
             index_meta_data = self.meta_json_parser.parse(json_string_result.downloaded_string)
@@ -210,7 +227,7 @@ class SpdjDownloadParameterValuesStorage(SpdjDynamicEnumTypeManager, DownloadPar
         self.downloader.headers = self.headers
         self.downloader.parameters = []
 
-        json_string_result = self.downloader.download_string(SpdjStringDataDownloader.index_finder_url)
+        json_string_result = self.downloader.download_string(self.index_finder_url)
 
         try:
             index_finder_filters = tuple(self.index_finder_filters_parser.parse(json_string_result.downloaded_string))

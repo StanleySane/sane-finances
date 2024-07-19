@@ -133,14 +133,14 @@ class BloombergDownloadParameterValuesStorage(DownloadParameterValuesStorage):
     @staticmethod
     def _get_timeframes_choices():
         timeframe: Timeframes
-        return [(timeframe.value, timeframe.description)  # pylint: disable=undefined-variable
+        return [(timeframe.value, timeframe.description)  # pylint: disable=undefined-variable, used-before-assignment
                 for timeframe
                 in Timeframes]
 
     @staticmethod
     def _get_intervals_choices():
         interval: Intervals
-        return [(interval.value, interval.value)  # pylint: disable=undefined-variable
+        return [(interval.value, interval.value)  # pylint: disable=undefined-variable, used-before-assignment
                 for interval
                 in Intervals]
 

@@ -57,7 +57,6 @@ class CbrStringDataDownloader(InstrumentStringDataDownloader):
             parameters: CbrCurrencyHistoryDownloadParameters,
             moment_from: datetime.datetime,
             moment_to: datetime.datetime) -> DownloadStringResult:
-
         date_from = moment_from.date()
         date_to = moment_to.date()
         if moment_to.time() != datetime.time.min:
@@ -238,9 +237,11 @@ class CbrCurrencyDownloadParameterValuesStorage(DownloadParameterValuesStorage):
     def _get_rate_frequency_choices():
         rate_frequency: RateFrequencies
 
-        return [(rate_frequency.value, rate_frequency.description)  # pylint: disable=undefined-variable
-                for rate_frequency
-                in RateFrequencies]
+        return [
+            # pylint: disable=undefined-variable, used-before-assignment
+            (rate_frequency.value, rate_frequency.description)
+            for rate_frequency
+            in RateFrequencies]
 
 
 class CbrCurrencyRatesExporterFactory(InstrumentExporterFactory):
