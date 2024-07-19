@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/venv38" />
       <excludeFolder url="file://$MODULE_DIR$/venv39" />
+      <excludeFolder url="file://$MODULE_DIR$/src/sane_finances.egg-info" />
       <excludePattern pattern="*.egg-info" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (sane_finances)" jdkType="Python SDK" />

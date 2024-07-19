@@ -4,15 +4,16 @@
 """ Utility for download text from web.
 """
 
-import typing
+import gzip
+import http.client
 import logging
+import typing
+import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.error
-import http.client
 
-from .downloader import Downloader, DownloadStringResult, DownloadError
 from .cachers import BaseCacher
+from .downloader import DownloadError, DownloadStringResult, Downloader
 
 logging.getLogger().addHandler(logging.NullHandler())
 
@@ -106,12 +107,18 @@ class UrlDownloader(Downloader):
         """
         try:
             with urllib.request.urlopen(request, timeout=self.timeout_in_seconds) as response:
-                data: bytearray = response.read()
+                is_gzip = response.headers.get('Content-Encoding') == 'gzip'
+                raw_data = response.read()
+                data: bytes = bytes(raw_data)
 
         except (urllib.error.URLError, http.client.HTTPException) as ex:
-            raise DownloadError() from ex
+            raise DownloadError(ex.reason) from ex
 
         self.logger.debug(f"Downloaded {len(data or '')} bytes")
+
+        if is_gzip:
+            data = gzip.decompress(data)
+
         return data.decode(encoding)
 
     def build_query(self, url: str) -> urllib.request.Request:
