@@ -99,7 +99,7 @@ class SpdjIndexFinderFiltersParser:
                 # try to find last parsed group by position
                 checkbox_position = m_checkbox.start()
                 current_group_pos = max(
-                    (group_pos for group_pos in groups_by_position.keys() if group_pos <= checkbox_position),
+                    (group_pos for group_pos in groups_by_position if group_pos <= checkbox_position),
                     default=-1)
 
                 if current_group_pos < 0:
