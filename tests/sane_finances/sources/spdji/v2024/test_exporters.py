@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from sane_finances.sources.base import InstrumentExporterFactory
-from sane_finances.sources.spdji.v2024.exporters import SpdjExporterFactory, SpdjDownloadParameterValuesStorage
-
+from sane_finances.sources.spdji.v2024.exporters import SpdjDownloadParameterValuesStorage, SpdjExporterFactory
 from .common import CommonTestCases
 from ..v2021 import test_exporters
 

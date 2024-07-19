@@ -8,9 +8,8 @@ import logging
 import re
 import typing
 
-from ..v2021.meta import (IndexFinderFilter, IndexFinderFilterGroup)
-from ...base import (
-    ParseError)
+from ..v2021.meta import IndexFinderFilter, IndexFinderFilterGroup
+from ...base import ParseError
 
 logging.getLogger().addHandler(logging.NullHandler())
 

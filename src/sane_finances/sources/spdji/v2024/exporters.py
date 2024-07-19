@@ -3,19 +3,15 @@
 
 """ Tools for download (export) index data from https://www.spglobal.com/spdji/
 """
-import datetime
-import itertools
 import logging
 import typing
 
 from .parsers import SpdjIndexFinderFiltersParser
 from .. import v2021
 from ..v2021.exporters import SpdjApiActualityChecker, SpdjDynamicEnumTypeManager
-from ..v2021.meta import (Currency, IndexFinderFilter, ReturnType, SpdjDownloadParametersFactory,
-                          SpdjIndexHistoryDownloadParameters, SpdjIndexesInfoDownloadParameters)
+from ..v2021.meta import SpdjDownloadParametersFactory
 from ..v2021.parsers import SpdjHistoryJsonParser, SpdjInfoJsonParser, SpdjMetaJsonParser
-from ...base import (DownloadStringResult, InstrumentExporterFactory, InstrumentHistoryValuesExporter,
-                     InstrumentStringDataDownloader, InstrumentsInfoExporter)
+from ...base import InstrumentExporterFactory, InstrumentHistoryValuesExporter, InstrumentsInfoExporter
 from ...generic import GenericInstrumentHistoryValuesExporter, GenericInstrumentsInfoExporter
 from ....communication.downloader import Downloader
 

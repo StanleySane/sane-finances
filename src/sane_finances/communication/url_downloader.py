@@ -112,7 +112,7 @@ class UrlDownloader(Downloader):
                 data: bytes = bytes(raw_data)
 
         except (urllib.error.URLError, http.client.HTTPException) as ex:
-            raise DownloadError() from ex
+            raise DownloadError(ex.reason) from ex
 
         self.logger.debug(f"Downloaded {len(data or '')} bytes")
 

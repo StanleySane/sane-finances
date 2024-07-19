@@ -10,6 +10,8 @@ import itertools
 import logging
 import typing
 
+from ....retry_policy import wait_and_retry
+
 from .meta import (
     IndexFinderFilterGroup, IndexFinderFilter, Currency, ReturnType,
     SpdjIndexHistoryDownloadParameters, SpdjIndexesInfoDownloadParameters, SpdjDownloadParametersFactory, IndexMetaData)
@@ -100,7 +102,14 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
         self.downloader.parameters = params
         self.downloader.headers = self.headers
 
-        return self.downloader.download_string(self.history_url)
+        download_result: typing.List[typing.Optional[DownloadStringResult]] = [None]
+
+        def download_action():
+            download_result[0] = self.downloader.download_string(self.history_url)
+
+        wait_and_retry(download_action, lambda x, n: True)
+
+        return download_result[0]
 
     def download_index_info_string(
             self,
@@ -121,7 +130,14 @@ class SpdjStringDataDownloader(InstrumentStringDataDownloader):
         if index_finder_filter is not None:
             self.downloader.parameters.append((index_finder_filter.group.name, index_finder_filter.value))
 
-        return self.downloader.download_string(self.info_url)
+        download_result: typing.List[typing.Optional[DownloadStringResult]] = [None]
+
+        def download_action():
+            download_result[0] = self.downloader.download_string(self.info_url)
+
+        wait_and_retry(download_action, lambda x, n: True)
+
+        return download_result[0]
 
 
 class SpdjDynamicEnumTypeManager(DynamicEnumTypeManager):
